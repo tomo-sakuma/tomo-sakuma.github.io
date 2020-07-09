@@ -1,0 +1,389 @@
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+    <channel>
+        <title>Posts on 試作中</title>
+        <link>https://tomo-sakuma.github.io/posts/</link>
+        <description>Recent content in Posts on 試作中</description>
+        <generator>Hugo -- gohugo.io</generator>
+        <language>ja-jp</language>
+        <lastBuildDate>Thu, 09 Jul 2020 00:00:00 +0000</lastBuildDate>
+        <atom:link href="https://tomo-sakuma.github.io/posts/index.xml" rel="self" type="application/rss+xml" />
+        
+        <item>
+            <title>[Stata]dyndocコマンドを使った出力をカスタマイズする</title>
+            <link>https://tomo-sakuma.github.io/posts/2020-07-09_stata/</link>
+            <pubDate>Thu, 09 Jul 2020 00:00:00 +0000</pubDate>
+            
+            <guid>https://tomo-sakuma.github.io/posts/2020-07-09_stata/</guid>
+            <description>dyndoc コマンドは，Stata 15 から実装されたコマンド。stataのコマンドと結果はもちろん，markdown形式で文章を書いた結果レポートみたいなものをhtmlファイルやdocxファイルに出力できます。
+分析を変えてもその都度出力できるので，進捗報告のたびに結果の表をいちいちまとめたりしなくて良くなります。便利。
+本文を書いてwordに出力すると，論文の結果パートをstataだけで作成できます。便利。
+RでいうRmarkdownと似たような感じです。ただし，いろいろ超便利なRmarkdownと違って操作性が良くない。何もせずに使うと日本語は文字化けするし，数式も使えない。stataのサイトで配布されているheaderとcss使っても日本語文字化け問題は解決しないし，出力される表のデザインが気に入らない。いろいろな問題を解決するための方法をここにメモしておきます。
+ dyndocコマンドのマニュアルを一通り読んだ前提で書いています。
+markdown，html，cssを使っていますが，この辺り全く知らなくてもとりあえずここに書いたことはできます（僕は dyndocの出力方法をいじる過程で初めてhtmlとcssを触った初心者ですので，よくわかってない部分があります）。
+   気に入らない点 問題の解決  日本語の文字化けを防ぐ 数式を入れる   さらに使い勝手を良くするために  ファイル形式は.doでもいい コード部分を折り畳む 目次をつける 「トップに戻る」ボタンをつける コマンドのハイライト デザインを抜本的に変える   色々組み込んだcssを作った   以下色々書きますが，結局のところこのコマンドをstataに読ませたいファイルの一番上に貼っておけば全部できるようになります。
+&amp;lt;&amp;lt;dd_include: https://tomo-sakuma.github.io/stata_dyndoc_customize/stata_header.css&amp;gt;&amp;gt;
+ 1. 気に入らない点 何も特別なことをしない状態のものを実行すると，日本語が文字化けします。数式は表示されないです(コードは載せないか載せるかの二択)。さらに，ブラウザの幅の広さに合わせて横幅いっぱいに文字が表示されます。
+試しにsample.doというdoファイルに以下の内容が書かれているとして，dyndoc sample.do,replace embedimage を実行します
+&amp;lt;&amp;lt;dd_version: 2&amp;gt;&amp;gt; # Title &amp;lt;&amp;lt;dd_display: &amp;quot;$S_DATE $S_TIME&amp;quot;&amp;gt;&amp;gt; This is an example 日本語は文字化けする $$y=ax+b$$ ~~~~ &amp;lt;&amp;lt;dd_do:&amp;gt;&amp;gt; clear all sysuse auto.dta sum eststo result1: ///　回帰分析 reg price mpg esttab result1 ///　結果の表示 using test1.</description>
+            <content type="html"><![CDATA[<p><code>dyndoc</code> コマンドは，Stata 15 から実装されたコマンド。stataのコマンドと結果はもちろん，markdown形式で文章を書いた結果レポートみたいなものをhtmlファイルやdocxファイルに出力できます。</p>
+<p>分析を変えてもその都度出力できるので，進捗報告のたびに結果の表をいちいちまとめたりしなくて良くなります。便利。</p>
+<p>本文を書いてwordに出力すると，論文の結果パートをstataだけで作成できます。便利。</p>
+<p>RでいうRmarkdownと似たような感じです。ただし，いろいろ超便利なRmarkdownと違って操作性が良くない。何もせずに使うと日本語は文字化けするし，数式も使えない。stataのサイトで配布されているheaderとcss使っても日本語文字化け問題は解決しないし，出力される表のデザインが気に入らない。いろいろな問題を解決するための方法をここにメモしておきます。</p>
+<blockquote>
+<p>dyndocコマンドのマニュアルを一通り読んだ前提で書いています。<br>
+markdown，html，cssを使っていますが，この辺り全く知らなくてもとりあえずここに書いたことはできます（僕は <code>dyndoc</code>の出力方法をいじる過程で初めてhtmlとcssを触った初心者ですので，よくわかってない部分があります）。</p>
+</blockquote>
+<hr>
+<ol>
+<li><a href="#1-%E6%B0%97%E3%81%AB%E5%85%A5%E3%82%89%E3%81%AA%E3%81%84%E7%82%B9">気に入らない点</a></li>
+<li><a href="#2-%E5%95%8F%E9%A1%8C%E3%81%AE%E8%A7%A3%E6%B1%BA">問題の解決</a>
+<ol>
+<li><a href="#21-%E6%97%A5%E6%9C%AC%E8%AA%9E%E3%81%AE%E6%96%87%E5%AD%97%E5%8C%96%E3%81%91%E3%82%92%E9%98%B2%E3%81%90">日本語の文字化けを防ぐ</a></li>
+<li><a href="#22-%E6%95%B0%E5%BC%8F%E3%82%92%E5%85%A5%E3%82%8C%E3%82%8B">数式を入れる</a></li>
+</ol>
+</li>
+<li><a href="#3-%E3%81%95%E3%82%89%E3%81%AB%E4%BD%BF%E3%81%84%E5%8B%9D%E6%89%8B%E3%82%92%E8%89%AF%E3%81%8F%E3%81%99%E3%82%8B%E3%81%9F%E3%82%81%E3%81%AB">さらに使い勝手を良くするために</a>
+<ol>
+<li><a href="#31-%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB%E5%BD%A2%E5%BC%8F%E3%81%AF.do%E3%81%A7%E3%82%82%E3%81%84%E3%81%84">ファイル形式は.doでもいい</a></li>
+<li><a href="#32-%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB%E5%BD%A2%E5%BC%8F%E3%81%AF.do%E3%81%A7%E3%82%82%E3%81%84%E3%81%84">コード部分を折り畳む</a></li>
+<li><a href="#33-%E7%9B%AE%E6%AC%A1%E3%82%92%E3%81%A4%E3%81%91%E3%82%8B">目次をつける</a></li>
+<li><a href="#34-%E3%80%8C%E3%83%88%E3%83%83%E3%83%97%E3%81%AB%E6%88%BB%E3%82%8B%E3%80%8D%E3%83%9C%E3%82%BF%E3%83%B3%E3%82%92%E3%81%A4%E3%81%91%E3%82%8B">「トップに戻る」ボタンをつける</a></li>
+<li><a href="#i35-%E3%82%B3%E3%83%9E%E3%83%B3%E3%83%89%E3%81%AE%E3%83%8F%E3%82%A4%E3%83%A9%E3%82%A4%E3%83%88">コマンドのハイライト</a></li>
+<li><a href="#36-%E3%83%87%E3%82%B6%E3%82%A4%E3%83%B3%E3%82%92%E6%8A%9C%E6%9C%AC%E7%9A%84%E3%81%AB%E5%A4%89%E3%81%88%E3%82%8B">デザインを抜本的に変える</a></li>
+</ol>
+</li>
+<li><a href="#4-%E8%89%B2%E3%80%85%E7%B5%84%E3%81%BF%E8%BE%BC%E3%82%93%E3%81%A0css%E3%82%92%E4%BD%9C%E3%81%A3%E3%81%9F">色々組み込んだcssを作った</a></li>
+</ol>
+<hr>
+<p>以下色々書きますが，結局のところこのコマンドをstataに読ませたいファイルの一番上に貼っておけば全部できるようになります。</p>
+<p><code>&lt;&lt;dd_include: https://tomo-sakuma.github.io/stata_dyndoc_customize/stata_header.css&gt;&gt;</code></p>
+<hr>
+<p><!-- raw HTML omitted --><!-- raw HTML omitted --></p>
+<h2 id="1-気に入らない点">1. 気に入らない点</h2>
+<p>何も特別なことをしない状態のものを実行すると，日本語が文字化けします。数式は表示されないです(コードは載せないか載せるかの二択)。さらに，ブラウザの幅の広さに合わせて横幅いっぱいに文字が表示されます。</p>
+<p>試しにsample.doというdoファイルに以下の内容が書かれているとして，<code>dyndoc sample.do,replace embedimage</code> を実行します</p>
+<pre><code>&lt;&lt;dd_version: 2&gt;&gt;
+# Title
+&lt;&lt;dd_display: &quot;$S_DATE $S_TIME&quot;&gt;&gt;
+
+This is an example
+
+日本語は文字化けする
+
+$$y=ax+b$$
+
+~~~~
+&lt;&lt;dd_do:&gt;&gt;
+clear all
+
+sysuse auto.dta
+
+sum
+
+eststo result1: ///　回帰分析
+ reg price mpg
+
+esttab result1 ///　結果の表示
+ using test1.html ///
+ ,replace ///
+ star(* 0.1 ** 0.05 *** 0.01) ///
+ b(3) se(3) brackets r2(3) ar2(3) aic(3) ///
+ label varwidth(25)
+&lt;&lt;/dd_do&gt;&gt;
+~~~~
+</code></pre><p><img src="https://cdn-images-1.medium.com/max/1600/1*Bz9ymwNgYZUiC-K6s8PZkQ.png" alt="何も工夫せずにやるとこうなる"></p>
+<hr>
+<p><!-- raw HTML omitted --><!-- raw HTML omitted --></p>
+<h2 id="2-問題の解決">2. 問題の解決</h2>
+<p><!-- raw HTML omitted --><!-- raw HTML omitted --></p>
+<h3 id="21-日本語の文字化けを防ぐ">2.1 日本語の文字化けを防ぐ</h3>
+<p>一番単純な方法は，ファイルの最初（本文や内容の前）に以下のコードを貼り付けること。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-html" data-lang="html">&lt;<span style="color:#f92672">head</span>&gt;
+  &lt;<span style="color:#f92672">meta</span> <span style="color:#a6e22e">http-equiv</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;content-type&#34;</span> <span style="color:#a6e22e">charset</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;utf-8&#34;</span>&gt;
+&lt;/<span style="color:#f92672">head</span>&gt;
+</code></pre></div><p><!-- raw HTML omitted --><!-- raw HTML omitted --></p>
+<h3 id="22-数式を入れる">2.2 数式を入れる</h3>
+<p>そんな場合htmlで数式を表示するMathjaxを使う。上で使った<code>&lt;head&gt;&lt;/head&gt;</code> 内に以下のものを入れておくとtex形式の数式を出力できる。(なんか重複してる感じがするけど，一部抜いたらうまくいかなかったからこのままにしている)</p>
+<p><code>$$</code> で囲むとディスプレイ形式， <code>$</code> で囲むとインライン形式で数式を入れることができる。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-html" data-lang="html">&lt;<span style="color:#f92672">head</span>&gt;
+  &lt;<span style="color:#f92672">script</span> <span style="color:#a6e22e">type</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;text/x-mathjax-config&#34;</span>&gt;
+    <span style="color:#a6e22e">MathJax</span>.<span style="color:#a6e22e">Hub</span>.<span style="color:#a6e22e">Config</span>({
+      <span style="color:#a6e22e">tex2jax</span><span style="color:#f92672">:</span> {<span style="color:#a6e22e">inlineMath</span><span style="color:#f92672">:</span> [[<span style="color:#e6db74">&#39;$&#39;</span>,<span style="color:#e6db74">&#39;$&#39;</span>], [<span style="color:#e6db74">&#39;\\(&#39;</span>,<span style="color:#e6db74">&#39;\\)&#39;</span>]]},
+      <span style="color:#a6e22e">displayAlign</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#34;left&#34;</span>,
+      <span style="color:#a6e22e">displayIndent</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#34;2em&#34;</span>
+    });
+  &lt;/<span style="color:#f92672">script</span>&gt;
+  &lt;<span style="color:#f92672">script</span> <span style="color:#a6e22e">type</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;text/javascript&#34;</span> <span style="color:#a6e22e">async</span>
+    <span style="color:#a6e22e">src</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_CHTML&#34;</span>&gt;
+  &lt;/<span style="color:#f92672">script</span>&gt;
+&lt;/<span style="color:#f92672">head</span>&gt;
+</code></pre></div><hr>
+<p><!-- raw HTML omitted --><!-- raw HTML omitted --></p>
+<h2 id="3-さらに使い勝手を良くするために">3. さらに使い勝手を良くするために</h2>
+<p><!-- raw HTML omitted --><!-- raw HTML omitted --></p>
+<h3 id="31-ファイル形式はdoでもいい">3.1 ファイル形式は.doでもいい</h3>
+<p>マニュアルでは.txt形式のファイルを読み込んでいる。</p>
+<ol>
+<li>do-fileで分析して</li>
+<li>.txtファイルに貼り付けて</li>
+<li>dyndocコマンドで.txtファイルを読み込んで出力</li>
+</ol>
+<p>という感じ。面倒臭い。試してみると，.do形式のファイルを指定しても普通に動く。なので，</p>
+<ol>
+<li>.doファイルで分析しながら本文を書き</li>
+<li><code>dyndoc</code>コマンドで.doファイルを読み込んで出力</li>
+</ol>
+<p>って感じで行ける(冒頭の例もそうやった)。なので，doファイルにコマンドも本文も書いておいて，そのファイルの冒頭にでも以下のような<code>dyndoc</code>実行のためのコマンドを(html用の)コメントとしてつけておいたらいい。出力するときはこの部分だけ実行する。</p>
+<p><code>&lt;!-- dyndoc ファイル名.do,replace embedimage --&gt;</code></p>
+<p><!-- raw HTML omitted --><!-- raw HTML omitted --></p>
+<h3 id="32-コード部分を折り畳む">3.2 コード部分を折り畳む</h3>
+<p>コードを表示して出力するか非表示にするかは，マニュアル通りにやれば指定できる。でもRmarkdownみたいに「コード部分を折りたたんでおいて，クリックしたら開くようにしたい。」という場合には工夫が必要（マニュアルには載っていない）。</p>
+<p><code>dyndoc</code>コマンドを使うときにstataのコード囲む以下の書式</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-html" data-lang="html">~~~~
+<span style="color:#960050;background-color:#1e0010">&lt;</span>&lt;<span style="color:#f92672">dd_do</span>&gt;&gt;
+ /*ここにstataコードを書く*/
+<span style="color:#960050;background-color:#1e0010">&lt;</span>&lt;/<span style="color:#f92672">dd_do</span>&gt;&gt;
+~~~~
+</code></pre></div><p>の前後に <code>&lt;details&gt;</code>をつければいい。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-html" data-lang="html">&lt;<span style="color:#f92672">details</span>&gt;
+&lt;<span style="color:#f92672">summary</span>&gt; &lt;<span style="color:#f92672">b</span>&gt;Code&lt;/<span style="color:#f92672">b</span>&gt; &lt;/<span style="color:#f92672">summary</span>&gt;
+
+~~~~
+<span style="color:#960050;background-color:#1e0010">&lt;</span>&lt;<span style="color:#f92672">dd_do</span>&gt;&gt;
+ /*ここにstataコードを書く*/
+<span style="color:#960050;background-color:#1e0010">&lt;</span>&lt;/<span style="color:#f92672">dd_do</span>&gt;&gt;
+~~~~
+
+&lt;/<span style="color:#f92672">detail</span>&gt;
+</code></pre></div><p><!-- raw HTML omitted --><!-- raw HTML omitted --></p>
+<h3 id="33-目次をつける">3.3 目次をつける</h3>
+<p>レポートが長くなったら目次をつけたい。そんな場合はmarkdownの目次が使える。本文の見出しがこんな感じだとすると</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-markdown" data-lang="markdown"> ## 1項のタイトル
+</code></pre></div><p>目次は</p>
+<pre><code>1. [1項のタイトル](#1項のタイトル)  
+2. [2項のタイトル](#2項のタイトル)
+</code></pre><p>という箇条書きを作り，本文のタイトルと同じもの（前に#をつける)を括弧で囲んでつける。()の中について，スペースは「-」でつなぐとか「.」は無視するとか例外もある。</p>
+<p><!-- raw HTML omitted --><!-- raw HTML omitted --></p>
+<h3 id="34トップに戻るボタンをつける">3.4「トップに戻る」ボタンをつける</h3>
+<p>レポートが長くなったら目次に戻るボタンをつけたい。</p>
+<p><code>&lt;head&gt;</code>の<code>&lt;style&gt;</code>内に以下のように入れておく</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-html" data-lang="html">&lt;<span style="color:#f92672">head</span>&gt;
+  &lt;<span style="color:#f92672">style</span>&gt;
+    .<span style="color:#a6e22e">sticky</span> {
+      <span style="color:#66d9ef">position</span>: <span style="color:#66d9ef">-webkit-</span><span style="color:#66d9ef">sticky</span>;
+      <span style="color:#66d9ef">position</span>: <span style="color:#66d9ef">sticky</span>;
+      <span style="color:#66d9ef">bottom</span>: <span style="color:#ae81ff">15</span><span style="color:#66d9ef">px</span>;
+      <span style="color:#66d9ef">float</span>: <span style="color:#66d9ef">right</span>;
+    }
+ &lt;/<span style="color:#f92672">style</span>&gt;
+&lt;/<span style="color:#f92672">head</span>&gt;
+</code></pre></div><p>その上で，出力したいファイルの最初(タイトルの下とか)に</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-html" data-lang="html">&lt;<span style="color:#f92672">a</span> <span style="color:#a6e22e">id</span><span style="color:#f92672">=</span><span style="color:#e6db74">”top”</span>&gt;&lt;/<span style="color:#f92672">a</span>&gt;
+</code></pre></div><p>ファイルの最後の行に</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-html" data-lang="html">&lt;<span style="color:#f92672">div</span> <span style="color:#a6e22e">class</span><span style="color:#f92672">=</span><span style="color:#e6db74">”sticky”</span>&gt;
+
+[↑Top](#top)
+
+&lt;/<span style="color:#f92672">div</span>&gt;
+</code></pre></div><p>を入れる。画面の右下にトップに戻るボタンが表示されるようになる。</p>
+<p><!-- raw HTML omitted --><!-- raw HTML omitted --></p>
+<h3 id="35-コマンドのハイライト">3.5 コマンドのハイライト</h3>
+<p>Stataのsyntax highlightingをやってくれるStataxというのがある。 <code>&lt;head&gt;</code>内に以下のものを入れておくと使える。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-html" data-lang="html">&lt;<span style="color:#f92672">head</span>&gt;
+  &lt;<span style="color:#f92672">script</span> <span style="color:#a6e22e">type</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;text/javascript&#34;</span> <span style="color:#a6e22e">src</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#39;http://haghish.com/statax/Statax.js&#39;</span>&gt;&lt;/<span style="color:#f92672">script</span>&gt;
+&lt;/<span style="color:#f92672">head</span>&gt;
+</code></pre></div><p>各コマンドの入力部の前後に <code>&lt;pre class =”sh_stata”&gt;</code>と <code>&lt;/pre&gt;</code>ををつける。コマンドの折り畳みも含めると，こんな感じ。入力辞書にでもショートカットとして入れておくといいかも（僕はsssって打つとこれが出るようにしてます）。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-html" data-lang="html">&lt;<span style="color:#f92672">details</span>&gt;
+&lt;<span style="color:#f92672">summary</span>&gt; &lt;<span style="color:#f92672">b</span>&gt;Code&lt;/<span style="color:#f92672">b</span>&gt; &lt;/<span style="color:#f92672">summary</span>&gt;
+&lt;<span style="color:#f92672">pre</span> <span style="color:#a6e22e">class</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;sh_stata&#34;</span>&gt;
+
+~~~~
+<span style="color:#960050;background-color:#1e0010">&lt;</span>&lt;<span style="color:#f92672">dd_do:</span> <span style="color:#a6e22e">noresults</span>&gt;&gt;
+/*ここstataコード*/
+<span style="color:#960050;background-color:#1e0010">&lt;</span>&lt;/<span style="color:#f92672">dd_do</span>&gt;&gt;
+~~~~
+
+&lt;/<span style="color:#f92672">pre</span>&gt;&lt;/<span style="color:#f92672">details</span>&gt;
+</code></pre></div><p><!-- raw HTML omitted --><!-- raw HTML omitted --></p>
+<h3 id="36-デザインを抜本的に変える">3.6 デザインを抜本的に変える</h3>
+<p>フォントとか表示される横幅とかいろいろ変えたいって思ったら，cssファイルを作成しておき，doファイルの最初にcssを読み込むコマンドをつけておけば良い。(cssの内容をdoファイルにベタ打ちしても同じことはできるけど，ファイル長くなりすぎて肝心の分析の内容とかを確認しづらくなる。)</p>
+<p>例えばhead.cssというファイルを作っておいて，doファイルの冒頭に</p>
+<p><code>&lt;&lt;dd_include: /Users/(ファイルの場所)/head.css&gt;&gt;</code></p>
+<p>をつけとくと，cssの内容を反映してくれる。</p>
+<hr>
+<p><!-- raw HTML omitted --><!-- raw HTML omitted --></p>
+<h2 id="4-色々組み込んだcssを作った">4. 色々組み込んだcssを作った</h2>
+<p>上に書いた日本語文字化け防止とか，トップに戻るボタンとか，数式の出力，コードのハイライトにとかができるようにしたcssをgithubに載せておきました。それを呼び出すのがこの記事の冒頭に書いたこれです。</p>
+<p><code>&lt;&lt;dd_include: https://tomo-sakuma.github.io/stata_dyndoc_customize/stata_header.css&gt;&gt;</code></p>
+<p>これをファイルの最初に書いておいて，上であげたdoファイル内の変更（コードの折りたたみなど）を加えると，こんな感じになります。さっきと同じように，sample2.doというdoファイルに以下の内容が書かれているとして，<code>dyndoc sample.do,replace embedimage</code> を実行します。</p>
+<pre><code>&lt;&lt;dd_include: https://tomo-sakuma.github.io/stata_dyndoc_customize/stata_header.css &gt;&gt;
+
+&lt;&lt;dd_version: 2&gt;&gt;
+
+# Title
+&lt;&lt;dd_display: &quot;$S_DATE $S_TIME&quot;&gt;&gt;
+
+This is an example
+
+日本語は文字化けする
+
+$$y=ax+b$$
+
+&lt;details&gt;
+&lt;summary&gt; &lt;b&gt;Code&lt;/b&gt; &lt;/summary&gt;
+&lt;pre class=&quot;sh_stata&quot;&gt;
+
+~~~~
+&lt;&lt;dd_do:&gt;&gt;
+clear all
+
+sysuse auto.dta
+
+sum
+
+eststo result1: ///　回帰分析
+ reg price mpg
+
+esttab result1 ///　結果の表示
+ using test1.html ///
+ ,replace ///
+ star(* 0.1 ** 0.05 *** 0.01) ///
+ b(3) se(3) brackets r2(3) ar2(3) aic(3) ///
+ label varwidth(25)
+&lt;&lt;/dd_do&gt;&gt;
+~~~~
+
+&lt;/pre&gt;&lt;/details&gt;
+
+&lt;&lt;dd_include: test1.html&gt;&gt;
+
+&lt;div class=&quot;sticky&quot;&gt;
+
+[↑Top](#top)
+
+&lt;/div&gt;
+</code></pre><p><img src="https://cdn-images-1.medium.com/max/2400/1*iREK0VVfx6vE53RbSqUNpA.png" alt=""></p>
+<p>Codeボタンを押したらこんな感じ。</p>
+<p><img src="https://cdn-images-1.medium.com/max/2400/1*w4g8PwbFZgxVRrDC3P6Bzg.png" alt=""></p>
+]]></content>
+        </item>
+        
+        <item>
+            <title>[サバティカル]行き先探し</title>
+            <link>https://tomo-sakuma.github.io/posts/2020-07-04%E8%A1%8C%E3%81%8D%E5%85%88/</link>
+            <pubDate>Sat, 04 Jul 2020 15:59:02 -0400</pubDate>
+            
+            <guid>https://tomo-sakuma.github.io/posts/2020-07-04%E8%A1%8C%E3%81%8D%E5%85%88/</guid>
+            <description>サバティカルで海外に行く場合，学内での申請に前後して，受け入れてもらえる研究機関を探さないといけません。僕自身は今回，周りに助けていただいて行き先が決まり、苦労していません。でもこの部分を書かないとなんというか納まりが悪いので，行き先を探していた時に際に色々な方からいただいたアドバイスを整理してみます。
+一般論 行き先の決め方としては，
+ 既に知り合いの先生や共同研究者にお願いする 日本の先生のつてを頼る 行きたいところの先生にメールを送る  といった感じに分けられるでしょうか。
+1つ目が理想なのでしょうが，特に若いうちに行くであろう最初のサバティカルの時点で既に海外の先生と交流がある，もしくは既に共同研究をしているという人は，うちの分野（経営学もしくは会計学）ではあまり多くないと思います（サバティカルを見越してコネを作っておく，というのが重要みたいです）。既に知っている先生なら，きっと行ってからも色々やりやすいと思います。
+2つ目は既に海外の先生と繋がりのあるシニアの先生に紹介してもらう，というパターンです。紹介してくださった先生のためにも頑張ろう，って気持ちになりますが，場合によってはプレッシャーになるかもしれません。また，この方法をとった場合，先方があまり乗り気でない場合がありかまってもらえないこともあるという話も聞きました。
+3の方法も自分の周りではよく聞きます。履歴書やworking paperなどをいろんなところに送って，受け入れて欲しいってお願いするんだと思います。断られたり無視されたら悲しそうです。応募窓口みたいなのががある大学もあるようです。
+どの方法をとるにしても，日本の大学の制度を用いて（給料をもらいながら）行く場合は「費用はこちらで用意するから，給料とかいらんで」っていうようなことをしっかり伝えながら頼むと受け入れハードルが下がるっていうのをどこかで読んだか聞いたかしました。
+その他考えないといけないこと もちろん，受け入れてもらえればどこでもいいわけではないと思います。その他重要な要因として，
+ 立地・治安 特に家族で行く場合は立地だとか治安だとかが重要です。田舎にある大学に行くか，都会に行くかで生活スタイルがかなり違ってきそうです。 治安に関しては日本ではあまり意識したことがなかったのですが，外国ではかなり気にしなきゃいけなさそうです。今いるDCも「全米トップクラスに治安の悪い都市」みたいなことがネットに上がってて，来る前は怖かったんですが，結局のところ市内でもピンキリでした。夜中にランニングできるところもあれば，明らかに危険そうな地域もあります。 家賃や物価 国ごとの物価水準，アメリカの場合は都市ごとの物価水準は，生活していく上で重要です。日本の大学教員の給料では住むのが苦しそうな場所もあります。 家賃に関しては上の立地や治安とも密接に関わっています。便利で安全なところは家賃が高いです。同じ市内でも危ないと言われている地域は安いです。アメリカの場合保育園(preschool)の料金も立地によってかなり違うみたいです(うちの子が通うpreschoolはフルタイムだと月25万円ぐらいです)。これもまた別の時にでも書きます。 大学に支払う費用 大学によっては客員研究員に対して年間数十万から数百万円の滞在料を請求するそうです。  自分の経験 僕自身は日本の先生に紹介していただいて行き先が決まりました。
+まず1箇所目のオーストリア・ウィーン行きが決まりました。オーストリアの先生が学会のために来日した際に話をする機会を作ってもらい，自分の研究の話をし，一緒に研究して欲しい旨伝えて了承してもらいました。ただし滞在していいのは3ヶ月間だけとのことだったので，残りの9ヶ月別の受け入れ先を探すことになりました。
+困っていたところ，いつもお世話になっている日本の先生から，アメリカの先生を紹介していただきました。快く受け入れを承諾していただき，2箇所目の滞在地がアメリカ・ワシントンDCに決まりました。
+受け入れてくれた先生はどちらも僕からしたらメジャーリーグのスター選手のような人です。最初の頃はメールを送る時，何回も見直しして緊張しながら送っていました（いや，一人はいまもそうです。）
+そんな感じで最初の３ヶ月がオーストリア，残り９ヶ月がアメリカというスケジュールになりました。</description>
+            <content type="html"><![CDATA[<p>サバティカルで海外に行く場合，学内での申請に前後して，受け入れてもらえる研究機関を探さないといけません。僕自身は今回，周りに助けていただいて行き先が決まり、苦労していません。でもこの部分を書かないとなんというか納まりが悪いので，行き先を探していた時に際に色々な方からいただいたアドバイスを整理してみます。</p>
+<h2 id="一般論">一般論</h2>
+<p>行き先の決め方としては，</p>
+<ol>
+<li>既に知り合いの先生や共同研究者にお願いする</li>
+<li>日本の先生のつてを頼る</li>
+<li>行きたいところの先生にメールを送る</li>
+</ol>
+<p>といった感じに分けられるでしょうか。</p>
+<p>1つ目が理想なのでしょうが，特に若いうちに行くであろう最初のサバティカルの時点で既に海外の先生と交流がある，もしくは既に共同研究をしているという人は，うちの分野（経営学もしくは会計学）ではあまり多くないと思います（サバティカルを見越してコネを作っておく，というのが重要みたいです）。既に知っている先生なら，きっと行ってからも色々やりやすいと思います。</p>
+<p>2つ目は既に海外の先生と繋がりのあるシニアの先生に紹介してもらう，というパターンです。紹介してくださった先生のためにも頑張ろう，って気持ちになりますが，場合によってはプレッシャーになるかもしれません。また，この方法をとった場合，先方があまり乗り気でない場合がありかまってもらえないこともあるという話も聞きました。</p>
+<p>3の方法も自分の周りではよく聞きます。履歴書やworking paperなどをいろんなところに送って，受け入れて欲しいってお願いするんだと思います。断られたり無視されたら悲しそうです。応募窓口みたいなのががある大学もあるようです。</p>
+<p>どの方法をとるにしても，日本の大学の制度を用いて（給料をもらいながら）行く場合は「費用はこちらで用意するから，給料とかいらんで」っていうようなことをしっかり伝えながら頼むと受け入れハードルが下がるっていうのをどこかで読んだか聞いたかしました。</p>
+<h2 id="その他考えないといけないこと">その他考えないといけないこと</h2>
+<p>もちろん，受け入れてもらえればどこでもいいわけではないと思います。その他重要な要因として，</p>
+<ul>
+<li>立地・治安
+特に家族で行く場合は立地だとか治安だとかが重要です。田舎にある大学に行くか，都会に行くかで生活スタイルがかなり違ってきそうです。
+治安に関しては日本ではあまり意識したことがなかったのですが，外国ではかなり気にしなきゃいけなさそうです。今いるDCも「全米トップクラスに治安の悪い都市」みたいなことがネットに上がってて，来る前は怖かったんですが，結局のところ市内でもピンキリでした。夜中にランニングできるところもあれば，明らかに危険そうな地域もあります。</li>
+<li>家賃や物価
+国ごとの物価水準，アメリカの場合は都市ごとの物価水準は，生活していく上で重要です。日本の大学教員の給料では住むのが苦しそうな場所もあります。
+家賃に関しては上の立地や治安とも密接に関わっています。便利で安全なところは家賃が高いです。同じ市内でも危ないと言われている地域は安いです。アメリカの場合保育園(preschool)の料金も立地によってかなり違うみたいです(うちの子が通うpreschoolはフルタイムだと月25万円ぐらいです)。これもまた別の時にでも書きます。</li>
+<li>大学に支払う費用
+大学によっては客員研究員に対して年間数十万から数百万円の滞在料を請求するそうです。</li>
+</ul>
+<h2 id="自分の経験">自分の経験</h2>
+<p>僕自身は日本の先生に紹介していただいて行き先が決まりました。</p>
+<p>まず1箇所目のオーストリア・ウィーン行きが決まりました。オーストリアの先生が学会のために来日した際に話をする機会を作ってもらい，自分の研究の話をし，一緒に研究して欲しい旨伝えて了承してもらいました。ただし滞在していいのは3ヶ月間だけとのことだったので，残りの9ヶ月別の受け入れ先を探すことになりました。</p>
+<p>困っていたところ，いつもお世話になっている日本の先生から，アメリカの先生を紹介していただきました。快く受け入れを承諾していただき，2箇所目の滞在地がアメリカ・ワシントンDCに決まりました。</p>
+<p>受け入れてくれた先生はどちらも僕からしたらメジャーリーグのスター選手のような人です。最初の頃はメールを送る時，何回も見直しして緊張しながら送っていました（いや，一人はいまもそうです。）</p>
+<p>そんな感じで最初の３ヶ月がオーストリア，残り９ヶ月がアメリカというスケジュールになりました。</p>
+]]></content>
+        </item>
+        
+        <item>
+            <title>サバティカルの経験2019-2020(準備・手続き・トラブル)</title>
+            <link>https://tomo-sakuma.github.io/posts/2020-07-03%E3%82%B5%E3%83%90%E3%83%86%E3%82%A3%E3%82%AB%E3%83%AB%E3%81%AE%E7%B5%8C%E9%A8%93/</link>
+            <pubDate>Fri, 03 Jul 2020 15:59:02 -0400</pubDate>
+            
+            <guid>https://tomo-sakuma.github.io/posts/2020-07-03%E3%82%B5%E3%83%90%E3%83%86%E3%82%A3%E3%82%AB%E3%83%AB%E3%81%AE%E7%B5%8C%E9%A8%93/</guid>
+            <description>サバティカルの経験(準備・手続き・トラブル) 現在2019年8月から2020年9月までの約1年間のサバティカル中です。オーストリアのウィーン経済経営大学(WU Vienna)（3ヶ月）の後，アメリカのジョージタウン大学ビジネススクール(Georgetown University McDonough School of Business)（9ヶ月）に滞在しています。
+さすがは世界一の国，コロナの感染者も死者もダントツの世界一となっているため，アメリカでの滞在の半分弱はロックダウンで（クソ高いのに狭い）アパートに閉じ込められています。作業机がないので基本的にベッドにパソコン置いて仕事しています。国外研究のタイミングの悪さを感じる日々ですが，とりあえず現地の先生に仲良くしてもらい共同研究も進んでいるので，キャリアとしては良かったのかもな，とも思っています。
+このサバティカル，行くことが決まってからの準備や手続きがそれはそれは面倒くさかったです。行ってからもトラブルや何やらありました。そんな経験をここに書いておこうと思います。これからサバティカルに行かれる方のお役に立てればな，と思います。
+ そもそもサバティカルって？ 大学に所属する研究者には，半年とか一年とかの間授業や学務をなしにしてもらい，どっかの国のどっかの大学で研究に専念する機会が与えられることがあります（国内のどっかの大学とか，なんなら学内でやる制度もあります）。この機会をサバティカルとか，在外研究とか，国外研究とか言ったりします。勤務校の制度は正しくはサバティカルではないのですが，一般的な呼称としてサバティカルと言うことにします。
+ サバティカルに行くための準備 で，このサバティカル，ほとんどの場合大学から給料プラス滞在費補助をいただいた上で「行き先を自分で探し，自分で諸手続きをし，勝手に行って勝手に帰ってくる」というスタイルです。なので
+ 受け入れてくれる大学（先生）を探す 必要なビザを調べ，取得する 保険に入る 行き方を調べる 住む場所探す  これら全てセルフサービスです。ビザ申請を補助してもらえたり，保険に入ってくれたり，住むところや車を支給してもらえたりする(場合がある)という企業の駐在員や，ビザ申請の指示や住居の斡旋がある(場合がある)留学に比べて，自分でやることが多いのではないかと思います。
+また，住民票とか家の管理とかのような，日本を出る前にやらなあかんこともたくさんありました。
+これらの手続き，かなり苦労しました。オーストリア，アメリカそれぞれでサバティカルしたことのある先輩に話を聞いたり，体験談を共有してくれている先生のブログ記事を見たりしながら情報を集めました（例えばアメリカのビザ申請については松浦先生の記事がとても有益でした）。
+米国へのサバティカル 2012年｜Soichi Matsuura｜note _J-1 VISAの申請 (その1)2012年9月7日から2013年9月25日まで，アメリカ合衆国ワシントン州シアトルにあるThe University of Washington, Foster School of…_note.com
+ どんなこと書く（予定）か 自分が調べているとき，サバティカルに必要なことがどっかにまとまってればええのになーと思ってました。ということで，自分が経験した手続きをまとめてみます。具体的には以下のようなことをまとめる予定です。
+ 受け入れ先探し ビザ申請（オーストリア・アメリカ） 保険 日本からの送金方法の確保 日本を出る前にやること 住むところ 子供の幼稚園  他にも，現地であったトラブルとその結果，例えば
+ 引越しのための移動で飛行機が遅延したら？ 病院での価格交渉（妻が値引きを勝ち取った） コロナと国外研究  などについても書こうかな，と思っています。
+僕の専門は会計学(経営学の一領域)です。例えば受け入れ先の探し方などは，他の分野では全然違うかもしれません。ビザ申請については，コロナ禍の現在はもちろん，コロナ収束後にも変わるかもしれません。保険や送金方法についても，もっといい方法があるんじゃないかと思ってます（もっと良い方法があったら是非教えてください！）。なのでサバティカル に行かれる方は結局のところ自分で調べる必要がありますが，そのとっかかりとして，これから書くことが今後サバティカルに行く方のお役に立ったら嬉しいです。</description>
+            <content type="html"><![CDATA[<h3 id="サバティカルの経験準備手続きトラブル">サバティカルの経験(準備・手続き・トラブル)</h3>
+<p>現在2019年8月から2020年9月までの約1年間のサバティカル中です。オーストリアのウィーン経済経営大学(<a href="https://www.wu.ac.at/">WU Vienna)</a>（3ヶ月）の後，アメリカのジョージタウン大学ビジネススクール(<a href="https://msb.georgetown.edu/">Georgetown University McDonough School of Business</a>)（9ヶ月）に滞在しています。</p>
+<p>さすがは世界一の国，コロナの感染者も死者もダントツの世界一となっているため，アメリカでの滞在の半分弱はロックダウンで（クソ高いのに狭い）アパートに閉じ込められています。作業机がないので基本的にベッドにパソコン置いて仕事しています。国外研究のタイミングの悪さを感じる日々ですが，とりあえず現地の先生に仲良くしてもらい共同研究も進んでいるので，キャリアとしては良かったのかもな，とも思っています。</p>
+<p>このサバティカル，行くことが決まってからの準備や手続きがそれはそれは面倒くさかったです。行ってからもトラブルや何やらありました。そんな経験をここに書いておこうと思います。これからサバティカルに行かれる方のお役に立てればな，と思います。</p>
+<p><img src="https://cdn-images-1.medium.com/max/2400/1*uW00xwgeG1wjaTlyX_003Q.jpeg" alt=""></p>
+<hr>
+<h3 id="そもそもサバティカルって">そもそもサバティカルって？</h3>
+<p>大学に所属する研究者には，半年とか一年とかの間授業や学務をなしにしてもらい，どっかの国のどっかの大学で研究に専念する機会が与えられることがあります（国内のどっかの大学とか，なんなら学内でやる制度もあります）。この機会をサバティカルとか，在外研究とか，国外研究とか言ったりします。勤務校の制度は正しくはサバティカルではないのですが，一般的な呼称としてサバティカルと言うことにします。</p>
+<hr>
+<h3 id="サバティカルに行くための準備">サバティカルに行くための準備</h3>
+<p>で，このサバティカル，ほとんどの場合大学から給料プラス滞在費補助をいただいた上で「行き先を自分で探し，自分で諸手続きをし，勝手に行って勝手に帰ってくる」というスタイルです。なので</p>
+<ul>
+<li>受け入れてくれる大学（先生）を探す</li>
+<li>必要なビザを調べ，取得する</li>
+<li>保険に入る</li>
+<li>行き方を調べる</li>
+<li>住む場所探す</li>
+</ul>
+<p>これら全てセルフサービスです。ビザ申請を補助してもらえたり，保険に入ってくれたり，住むところや車を支給してもらえたりする(場合がある)という企業の駐在員や，ビザ申請の指示や住居の斡旋がある(場合がある)留学に比べて，自分でやることが多いのではないかと思います。</p>
+<p>また，住民票とか家の管理とかのような，日本を出る前にやらなあかんこともたくさんありました。</p>
+<p>これらの手続き，かなり苦労しました。オーストリア，アメリカそれぞれでサバティカルしたことのある先輩に話を聞いたり，体験談を共有してくれている先生のブログ記事を見たりしながら情報を集めました（例えばアメリカのビザ申請については松浦先生の記事がとても有益でした）。</p>
+<p><a href="https://note.com/soichi/n/n70116d16ee53"><strong>米国へのサバティカル 2012年｜Soichi Matsuura｜note</strong>  <!-- raw HTML omitted -->_J-1 VISAの申請 (その1)2012年9月7日から2013年9月25日まで，アメリカ合衆国ワシントン州シアトルにあるThe University of Washington, Foster School of…_note.com</a><a href="https://note.com/soichi/n/n70116d16ee53"></a></p>
+<hr>
+<h3 id="どんなこと書く予定か">どんなこと書く（予定）か</h3>
+<p>自分が調べているとき，サバティカルに必要なことがどっかにまとまってればええのになーと思ってました。ということで，自分が経験した手続きをまとめてみます。具体的には以下のようなことをまとめる予定です。</p>
+<ul>
+<li>受け入れ先探し</li>
+<li>ビザ申請（オーストリア・アメリカ）</li>
+<li>保険</li>
+<li>日本からの送金方法の確保</li>
+<li>日本を出る前にやること</li>
+<li>住むところ</li>
+<li>子供の幼稚園</li>
+</ul>
+<p>他にも，現地であったトラブルとその結果，例えば</p>
+<ul>
+<li>引越しのための移動で飛行機が遅延したら？</li>
+<li>病院での価格交渉（妻が値引きを勝ち取った）</li>
+<li>コロナと国外研究</li>
+</ul>
+<p>などについても書こうかな，と思っています。</p>
+<p>僕の専門は会計学(経営学の一領域)です。例えば受け入れ先の探し方などは，他の分野では全然違うかもしれません。ビザ申請については，コロナ禍の現在はもちろん，コロナ収束後にも変わるかもしれません。保険や送金方法についても，もっといい方法があるんじゃないかと思ってます（もっと良い方法があったら是非教えてください！）。なのでサバティカル に行かれる方は結局のところ自分で調べる必要がありますが，そのとっかかりとして，これから書くことが今後サバティカルに行く方のお役に立ったら嬉しいです。</p>
+]]></content>
+        </item>
+        
+    </channel>
+</rss>

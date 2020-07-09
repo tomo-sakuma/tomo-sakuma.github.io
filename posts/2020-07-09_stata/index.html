@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="author" content="Tomohiro Sakuma ">
+<meta name="description" content="dyndoc コマンドは，Stata 15 から実装されたコマンド。stataのコマンドと結果はもちろん，markdown形式で文章を書いた結果レポートみたいなものをhtmlファイルやdocxファイルに出力できます。
+分析を変えてもその都度出力できるので，進捗報告のたびに結果の表をいちいちまとめたりしなくて良くなります。便利。
+本文を書いてwordに出力すると，論文の結果パートをstataだけで作成できます。便利。
+RでいうRmarkdownと似たような感じです。ただし，いろいろ超便利なRmarkdownと違って操作性が良くない。何もせずに使うと日本語は文字化けするし，数式も使えない。stataのサイトで配布されているheaderとcss使っても日本語文字化け問題は解決しないし，出力される表のデザインが気に入らない。いろいろな問題を解決するための方法をここにメモしておきます。
+ dyndocコマンドのマニュアルを一通り読んだ前提で書いています。
+markdown，html，cssを使っていますが，この辺り全く知らなくてもとりあえずここに書いたことはできます（僕は dyndocの出力方法をいじる過程で初めてhtmlとcssを触った初心者ですので，よくわかってない部分があります）。
+   気に入らない点 問題の解決  日本語の文字化けを防ぐ 数式を入れる   さらに使い勝手を良くするために  ファイル形式は.doでもいい コード部分を折り畳む 目次をつける 「トップに戻る」ボタンをつける コマンドのハイライト デザインを抜本的に変える   色々組み込んだcssを作った   以下色々書きますが，結局のところこのコマンドをstataに読ませたいファイルの一番上に貼っておけば全部できるようになります。
+&amp;lt;&amp;lt;dd_include: https://tomo-sakuma.github.io/stata_dyndoc_customize/stata_header.css&amp;gt;&amp;gt;
+ 1. 気に入らない点 何も特別なことをしない状態のものを実行すると，日本語が文字化けします。数式は表示されないです(コードは載せないか載せるかの二択)。さらに，ブラウザの幅の広さに合わせて横幅いっぱいに文字が表示されます。
+試しにsample.doというdoファイルに以下の内容が書かれているとして，dyndoc sample.do,replace embedimage を実行します
+&amp;lt;&amp;lt;dd_version: 2&amp;gt;&amp;gt; # Title &amp;lt;&amp;lt;dd_display: &amp;quot;$S_DATE $S_TIME&amp;quot;&amp;gt;&amp;gt; This is an example 日本語は文字化けする $$y=ax&#43;b$$ ~~~~ &amp;lt;&amp;lt;dd_do:&amp;gt;&amp;gt; clear all sysuse auto.dta sum eststo result1: ///　回帰分析 reg price mpg esttab result1 ///　結果の表示 using test1." />
+<meta name="keywords" content="homepage, blog, stata" />
+<meta name="robots" content="noodp" />
+<meta name="theme-color" content="" />
+<link rel="canonical" href="https://tomo-sakuma.github.io/posts/2020-07-09_stata/" />
+
+
+    <title>
+        
+            [Stata]dyndocコマンドを使った出力をカスタマイズする :: 試作中 
+        
+    </title>
+
+
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.2.1/css/flag-icon.min.css" rel="stylesheet"
+    type="text/css">
+
+
+
+<link rel="stylesheet" href="/main.9ef73869b612d21909277ae0d1ddd3002f83499f1465961652271e183ee2c2a3.css">
+
+
+
+
+
+
+<meta itemprop="name" content="[Stata]dyndocコマンドを使った出力をカスタマイズする">
+<meta itemprop="description" content="dyndoc コマンドは，Stata 15 から実装されたコマンド。stataのコマンドと結果はもちろん，markdown形式で文章を書いた結果レポートみたいなものをhtmlファイルやdocxファイルに出力できます。
+分析を変えてもその都度出力できるので，進捗報告のたびに結果の表をいちいちまとめたりしなくて良くなります。便利。
+本文を書いてwordに出力すると，論文の結果パートをstataだけで作成できます。便利。
+RでいうRmarkdownと似たような感じです。ただし，いろいろ超便利なRmarkdownと違って操作性が良くない。何もせずに使うと日本語は文字化けするし，数式も使えない。stataのサイトで配布されているheaderとcss使っても日本語文字化け問題は解決しないし，出力される表のデザインが気に入らない。いろいろな問題を解決するための方法をここにメモしておきます。
+ dyndocコマンドのマニュアルを一通り読んだ前提で書いています。
+markdown，html，cssを使っていますが，この辺り全く知らなくてもとりあえずここに書いたことはできます（僕は dyndocの出力方法をいじる過程で初めてhtmlとcssを触った初心者ですので，よくわかってない部分があります）。
+   気に入らない点 問題の解決  日本語の文字化けを防ぐ 数式を入れる   さらに使い勝手を良くするために  ファイル形式は.doでもいい コード部分を折り畳む 目次をつける 「トップに戻る」ボタンをつける コマンドのハイライト デザインを抜本的に変える   色々組み込んだcssを作った   以下色々書きますが，結局のところこのコマンドをstataに読ませたいファイルの一番上に貼っておけば全部できるようになります。
+&lt;&lt;dd_include: https://tomo-sakuma.github.io/stata_dyndoc_customize/stata_header.css&gt;&gt;
+ 1. 気に入らない点 何も特別なことをしない状態のものを実行すると，日本語が文字化けします。数式は表示されないです(コードは載せないか載せるかの二択)。さらに，ブラウザの幅の広さに合わせて横幅いっぱいに文字が表示されます。
+試しにsample.doというdoファイルに以下の内容が書かれているとして，dyndoc sample.do,replace embedimage を実行します
+&lt;&lt;dd_version: 2&gt;&gt; # Title &lt;&lt;dd_display: &quot;$S_DATE $S_TIME&quot;&gt;&gt; This is an example 日本語は文字化けする $$y=ax&#43;b$$ ~~~~ &lt;&lt;dd_do:&gt;&gt; clear all sysuse auto.dta sum eststo result1: ///　回帰分析 reg price mpg esttab result1 ///　結果の表示 using test1.">
+<meta itemprop="datePublished" content="2020-07-09T00:00:00&#43;00:00" />
+<meta itemprop="dateModified" content="2020-07-09T00:00:00&#43;00:00" />
+<meta itemprop="wordCount" content="315">
+<meta itemprop="image" content="https://tomo-sakuma.github.io/"/>
+
+
+
+<meta itemprop="keywords" content="stata," />
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://tomo-sakuma.github.io/"/>
+
+<meta name="twitter:title" content="[Stata]dyndocコマンドを使った出力をカスタマイズする"/>
+<meta name="twitter:description" content="dyndoc コマンドは，Stata 15 から実装されたコマンド。stataのコマンドと結果はもちろん，markdown形式で文章を書いた結果レポートみたいなものをhtmlファイルやdocxファイルに出力できます。
+分析を変えてもその都度出力できるので，進捗報告のたびに結果の表をいちいちまとめたりしなくて良くなります。便利。
+本文を書いてwordに出力すると，論文の結果パートをstataだけで作成できます。便利。
+RでいうRmarkdownと似たような感じです。ただし，いろいろ超便利なRmarkdownと違って操作性が良くない。何もせずに使うと日本語は文字化けするし，数式も使えない。stataのサイトで配布されているheaderとcss使っても日本語文字化け問題は解決しないし，出力される表のデザインが気に入らない。いろいろな問題を解決するための方法をここにメモしておきます。
+ dyndocコマンドのマニュアルを一通り読んだ前提で書いています。
+markdown，html，cssを使っていますが，この辺り全く知らなくてもとりあえずここに書いたことはできます（僕は dyndocの出力方法をいじる過程で初めてhtmlとcssを触った初心者ですので，よくわかってない部分があります）。
+   気に入らない点 問題の解決  日本語の文字化けを防ぐ 数式を入れる   さらに使い勝手を良くするために  ファイル形式は.doでもいい コード部分を折り畳む 目次をつける 「トップに戻る」ボタンをつける コマンドのハイライト デザインを抜本的に変える   色々組み込んだcssを作った   以下色々書きますが，結局のところこのコマンドをstataに読ませたいファイルの一番上に貼っておけば全部できるようになります。
+&lt;&lt;dd_include: https://tomo-sakuma.github.io/stata_dyndoc_customize/stata_header.css&gt;&gt;
+ 1. 気に入らない点 何も特別なことをしない状態のものを実行すると，日本語が文字化けします。数式は表示されないです(コードは載せないか載せるかの二択)。さらに，ブラウザの幅の広さに合わせて横幅いっぱいに文字が表示されます。
+試しにsample.doというdoファイルに以下の内容が書かれているとして，dyndoc sample.do,replace embedimage を実行します
+&lt;&lt;dd_version: 2&gt;&gt; # Title &lt;&lt;dd_display: &quot;$S_DATE $S_TIME&quot;&gt;&gt; This is an example 日本語は文字化けする $$y=ax&#43;b$$ ~~~~ &lt;&lt;dd_do:&gt;&gt; clear all sysuse auto.dta sum eststo result1: ///　回帰分析 reg price mpg esttab result1 ///　結果の表示 using test1."/>
+
+
+
+    <meta property="og:title" content="[Stata]dyndocコマンドを使った出力をカスタマイズする" />
+<meta property="og:description" content="dyndoc コマンドは，Stata 15 から実装されたコマンド。stataのコマンドと結果はもちろん，markdown形式で文章を書いた結果レポートみたいなものをhtmlファイルやdocxファイルに出力できます。
+分析を変えてもその都度出力できるので，進捗報告のたびに結果の表をいちいちまとめたりしなくて良くなります。便利。
+本文を書いてwordに出力すると，論文の結果パートをstataだけで作成できます。便利。
+RでいうRmarkdownと似たような感じです。ただし，いろいろ超便利なRmarkdownと違って操作性が良くない。何もせずに使うと日本語は文字化けするし，数式も使えない。stataのサイトで配布されているheaderとcss使っても日本語文字化け問題は解決しないし，出力される表のデザインが気に入らない。いろいろな問題を解決するための方法をここにメモしておきます。
+ dyndocコマンドのマニュアルを一通り読んだ前提で書いています。
+markdown，html，cssを使っていますが，この辺り全く知らなくてもとりあえずここに書いたことはできます（僕は dyndocの出力方法をいじる過程で初めてhtmlとcssを触った初心者ですので，よくわかってない部分があります）。
+   気に入らない点 問題の解決  日本語の文字化けを防ぐ 数式を入れる   さらに使い勝手を良くするために  ファイル形式は.doでもいい コード部分を折り畳む 目次をつける 「トップに戻る」ボタンをつける コマンドのハイライト デザインを抜本的に変える   色々組み込んだcssを作った   以下色々書きますが，結局のところこのコマンドをstataに読ませたいファイルの一番上に貼っておけば全部できるようになります。
+&lt;&lt;dd_include: https://tomo-sakuma.github.io/stata_dyndoc_customize/stata_header.css&gt;&gt;
+ 1. 気に入らない点 何も特別なことをしない状態のものを実行すると，日本語が文字化けします。数式は表示されないです(コードは載せないか載せるかの二択)。さらに，ブラウザの幅の広さに合わせて横幅いっぱいに文字が表示されます。
+試しにsample.doというdoファイルに以下の内容が書かれているとして，dyndoc sample.do,replace embedimage を実行します
+&lt;&lt;dd_version: 2&gt;&gt; # Title &lt;&lt;dd_display: &quot;$S_DATE $S_TIME&quot;&gt;&gt; This is an example 日本語は文字化けする $$y=ax&#43;b$$ ~~~~ &lt;&lt;dd_do:&gt;&gt; clear all sysuse auto.dta sum eststo result1: ///　回帰分析 reg price mpg esttab result1 ///　結果の表示 using test1." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://tomo-sakuma.github.io/posts/2020-07-09_stata/" />
+<meta property="og:image" content="https://tomo-sakuma.github.io/"/>
+<meta property="article:published_time" content="2020-07-09T00:00:00+00:00" />
+<meta property="article:modified_time" content="2020-07-09T00:00:00+00:00" />
+
+
+
+
+
+
+    <meta property="article:published_time" content="2020-07-09 00:00:00 &#43;0000 UTC" />
+
+
+
+
+
+
+
+
+    </head>
+
+    <body class="dark-theme">
+        <div class="container">
+            <header class="header">
+    <span class="header__inner">
+        <a href="/" style="text-decoration: none;">
+    <div class="logo">
+        
+            <span class="logo__mark">></span>
+            <span class="logo__text">T. Sakuma</span>
+            <span class="logo__cursor" style=
+                  "
+                   
+                   ">
+            </span>
+        
+    </div>
+</a>
+
+
+        <span class="header__right">
+            
+                <nav class="menu">
+    <ul class="menu__inner"><li><a href="https://tomo-sakuma.github.io/about">About</a></li><li><a href="https://tomo-sakuma.github.io/posts">Blog</a></li>
+    </ul>
+</nav>
+
+                <span class="menu-trigger">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <path d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
+                    </svg>
+                </span>
+            
+
+            <span class="theme-toggle unselectable"><svg class="theme-toggler" width="24" height="24" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M22 41C32.4934 41 41 32.4934 41 22C41 11.5066 32.4934 3 22
+  3C11.5066 3 3 11.5066 3 22C3 32.4934 11.5066 41 22 41ZM7 22C7
+  13.7157 13.7157 7 22 7V37C13.7157 37 7 30.2843 7 22Z"/>
+</svg>
+</span>
+        </span>
+    </span>
+</header>
+
+
+            <div class="content">
+                
+  <main class="post">
+
+    <div class="post-info">
+      <p>
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-clock">
+          <circle cx="12" cy="12" r="10"></circle>
+          <polyline points="12 6 12 12 16 14"></polyline>
+        </svg>
+        2 minutes
+
+        
+      </p>
+    </div>
+
+    <article>
+      <h1 class="post-title">
+        <a href="https://tomo-sakuma.github.io/posts/2020-07-09_stata/">[Stata]dyndocコマンドを使った出力をカスタマイズする</a>
+      </h1>
+
+      
+
+      <div class="post-content">
+        <p><code>dyndoc</code> コマンドは，Stata 15 から実装されたコマンド。stataのコマンドと結果はもちろん，markdown形式で文章を書いた結果レポートみたいなものをhtmlファイルやdocxファイルに出力できます。</p>
+<p>分析を変えてもその都度出力できるので，進捗報告のたびに結果の表をいちいちまとめたりしなくて良くなります。便利。</p>
+<p>本文を書いてwordに出力すると，論文の結果パートをstataだけで作成できます。便利。</p>
+<p>RでいうRmarkdownと似たような感じです。ただし，いろいろ超便利なRmarkdownと違って操作性が良くない。何もせずに使うと日本語は文字化けするし，数式も使えない。stataのサイトで配布されているheaderとcss使っても日本語文字化け問題は解決しないし，出力される表のデザインが気に入らない。いろいろな問題を解決するための方法をここにメモしておきます。</p>
+<blockquote>
+<p>dyndocコマンドのマニュアルを一通り読んだ前提で書いています。<br>
+markdown，html，cssを使っていますが，この辺り全く知らなくてもとりあえずここに書いたことはできます（僕は <code>dyndoc</code>の出力方法をいじる過程で初めてhtmlとcssを触った初心者ですので，よくわかってない部分があります）。</p>
+</blockquote>
+<hr>
+<ol>
+<li><a href="#1-%E6%B0%97%E3%81%AB%E5%85%A5%E3%82%89%E3%81%AA%E3%81%84%E7%82%B9">気に入らない点</a></li>
+<li><a href="#2-%E5%95%8F%E9%A1%8C%E3%81%AE%E8%A7%A3%E6%B1%BA">問題の解決</a>
+<ol>
+<li><a href="#21-%E6%97%A5%E6%9C%AC%E8%AA%9E%E3%81%AE%E6%96%87%E5%AD%97%E5%8C%96%E3%81%91%E3%82%92%E9%98%B2%E3%81%90">日本語の文字化けを防ぐ</a></li>
+<li><a href="#22-%E6%95%B0%E5%BC%8F%E3%82%92%E5%85%A5%E3%82%8C%E3%82%8B">数式を入れる</a></li>
+</ol>
+</li>
+<li><a href="#3-%E3%81%95%E3%82%89%E3%81%AB%E4%BD%BF%E3%81%84%E5%8B%9D%E6%89%8B%E3%82%92%E8%89%AF%E3%81%8F%E3%81%99%E3%82%8B%E3%81%9F%E3%82%81%E3%81%AB">さらに使い勝手を良くするために</a>
+<ol>
+<li><a href="#31-%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB%E5%BD%A2%E5%BC%8F%E3%81%AF.do%E3%81%A7%E3%82%82%E3%81%84%E3%81%84">ファイル形式は.doでもいい</a></li>
+<li><a href="#32-%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB%E5%BD%A2%E5%BC%8F%E3%81%AF.do%E3%81%A7%E3%82%82%E3%81%84%E3%81%84">コード部分を折り畳む</a></li>
+<li><a href="#33-%E7%9B%AE%E6%AC%A1%E3%82%92%E3%81%A4%E3%81%91%E3%82%8B">目次をつける</a></li>
+<li><a href="#34-%E3%80%8C%E3%83%88%E3%83%83%E3%83%97%E3%81%AB%E6%88%BB%E3%82%8B%E3%80%8D%E3%83%9C%E3%82%BF%E3%83%B3%E3%82%92%E3%81%A4%E3%81%91%E3%82%8B">「トップに戻る」ボタンをつける</a></li>
+<li><a href="#i35-%E3%82%B3%E3%83%9E%E3%83%B3%E3%83%89%E3%81%AE%E3%83%8F%E3%82%A4%E3%83%A9%E3%82%A4%E3%83%88">コマンドのハイライト</a></li>
+<li><a href="#36-%E3%83%87%E3%82%B6%E3%82%A4%E3%83%B3%E3%82%92%E6%8A%9C%E6%9C%AC%E7%9A%84%E3%81%AB%E5%A4%89%E3%81%88%E3%82%8B">デザインを抜本的に変える</a></li>
+</ol>
+</li>
+<li><a href="#4-%E8%89%B2%E3%80%85%E7%B5%84%E3%81%BF%E8%BE%BC%E3%82%93%E3%81%A0css%E3%82%92%E4%BD%9C%E3%81%A3%E3%81%9F">色々組み込んだcssを作った</a></li>
+</ol>
+<hr>
+<p>以下色々書きますが，結局のところこのコマンドをstataに読ませたいファイルの一番上に貼っておけば全部できるようになります。</p>
+<p><code>&lt;&lt;dd_include: https://tomo-sakuma.github.io/stata_dyndoc_customize/stata_header.css&gt;&gt;</code></p>
+<hr>
+<p><!-- raw HTML omitted --><!-- raw HTML omitted --></p>
+<h2 id="1-気に入らない点">1. 気に入らない点</h2>
+<p>何も特別なことをしない状態のものを実行すると，日本語が文字化けします。数式は表示されないです(コードは載せないか載せるかの二択)。さらに，ブラウザの幅の広さに合わせて横幅いっぱいに文字が表示されます。</p>
+<p>試しにsample.doというdoファイルに以下の内容が書かれているとして，<code>dyndoc sample.do,replace embedimage</code> を実行します</p>
+<pre><code>&lt;&lt;dd_version: 2&gt;&gt;
+# Title
+&lt;&lt;dd_display: &quot;$S_DATE $S_TIME&quot;&gt;&gt;
+
+This is an example
+
+日本語は文字化けする
+
+$$y=ax+b$$
+
+~~~~
+&lt;&lt;dd_do:&gt;&gt;
+clear all
+
+sysuse auto.dta
+
+sum
+
+eststo result1: ///　回帰分析
+ reg price mpg
+
+esttab result1 ///　結果の表示
+ using test1.html ///
+ ,replace ///
+ star(* 0.1 ** 0.05 *** 0.01) ///
+ b(3) se(3) brackets r2(3) ar2(3) aic(3) ///
+ label varwidth(25)
+&lt;&lt;/dd_do&gt;&gt;
+~~~~
+</code></pre><p><img src="https://cdn-images-1.medium.com/max/1600/1*Bz9ymwNgYZUiC-K6s8PZkQ.png" alt="何も工夫せずにやるとこうなる"></p>
+<hr>
+<p><!-- raw HTML omitted --><!-- raw HTML omitted --></p>
+<h2 id="2-問題の解決">2. 問題の解決</h2>
+<p><!-- raw HTML omitted --><!-- raw HTML omitted --></p>
+<h3 id="21-日本語の文字化けを防ぐ">2.1 日本語の文字化けを防ぐ</h3>
+<p>一番単純な方法は，ファイルの最初（本文や内容の前）に以下のコードを貼り付けること。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-html" data-lang="html">&lt;<span style="color:#f92672">head</span>&gt;
+  &lt;<span style="color:#f92672">meta</span> <span style="color:#a6e22e">http-equiv</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;content-type&#34;</span> <span style="color:#a6e22e">charset</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;utf-8&#34;</span>&gt;
+&lt;/<span style="color:#f92672">head</span>&gt;
+</code></pre></div><p><!-- raw HTML omitted --><!-- raw HTML omitted --></p>
+<h3 id="22-数式を入れる">2.2 数式を入れる</h3>
+<p>そんな場合htmlで数式を表示するMathjaxを使う。上で使った<code>&lt;head&gt;&lt;/head&gt;</code> 内に以下のものを入れておくとtex形式の数式を出力できる。(なんか重複してる感じがするけど，一部抜いたらうまくいかなかったからこのままにしている)</p>
+<p><code>$$</code> で囲むとディスプレイ形式， <code>$</code> で囲むとインライン形式で数式を入れることができる。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-html" data-lang="html">&lt;<span style="color:#f92672">head</span>&gt;
+  &lt;<span style="color:#f92672">script</span> <span style="color:#a6e22e">type</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;text/x-mathjax-config&#34;</span>&gt;
+    <span style="color:#a6e22e">MathJax</span>.<span style="color:#a6e22e">Hub</span>.<span style="color:#a6e22e">Config</span>({
+      <span style="color:#a6e22e">tex2jax</span><span style="color:#f92672">:</span> {<span style="color:#a6e22e">inlineMath</span><span style="color:#f92672">:</span> [[<span style="color:#e6db74">&#39;$&#39;</span>,<span style="color:#e6db74">&#39;$&#39;</span>], [<span style="color:#e6db74">&#39;\\(&#39;</span>,<span style="color:#e6db74">&#39;\\)&#39;</span>]]},
+      <span style="color:#a6e22e">displayAlign</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#34;left&#34;</span>,
+      <span style="color:#a6e22e">displayIndent</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#34;2em&#34;</span>
+    });
+  &lt;/<span style="color:#f92672">script</span>&gt;
+  &lt;<span style="color:#f92672">script</span> <span style="color:#a6e22e">type</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;text/javascript&#34;</span> <span style="color:#a6e22e">async</span>
+    <span style="color:#a6e22e">src</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_CHTML&#34;</span>&gt;
+  &lt;/<span style="color:#f92672">script</span>&gt;
+&lt;/<span style="color:#f92672">head</span>&gt;
+</code></pre></div><hr>
+<p><!-- raw HTML omitted --><!-- raw HTML omitted --></p>
+<h2 id="3-さらに使い勝手を良くするために">3. さらに使い勝手を良くするために</h2>
+<p><!-- raw HTML omitted --><!-- raw HTML omitted --></p>
+<h3 id="31-ファイル形式はdoでもいい">3.1 ファイル形式は.doでもいい</h3>
+<p>マニュアルでは.txt形式のファイルを読み込んでいる。</p>
+<ol>
+<li>do-fileで分析して</li>
+<li>.txtファイルに貼り付けて</li>
+<li>dyndocコマンドで.txtファイルを読み込んで出力</li>
+</ol>
+<p>という感じ。面倒臭い。試してみると，.do形式のファイルを指定しても普通に動く。なので，</p>
+<ol>
+<li>.doファイルで分析しながら本文を書き</li>
+<li><code>dyndoc</code>コマンドで.doファイルを読み込んで出力</li>
+</ol>
+<p>って感じで行ける(冒頭の例もそうやった)。なので，doファイルにコマンドも本文も書いておいて，そのファイルの冒頭にでも以下のような<code>dyndoc</code>実行のためのコマンドを(html用の)コメントとしてつけておいたらいい。出力するときはこの部分だけ実行する。</p>
+<p><code>&lt;!-- dyndoc ファイル名.do,replace embedimage --&gt;</code></p>
+<p><!-- raw HTML omitted --><!-- raw HTML omitted --></p>
+<h3 id="32-コード部分を折り畳む">3.2 コード部分を折り畳む</h3>
+<p>コードを表示して出力するか非表示にするかは，マニュアル通りにやれば指定できる。でもRmarkdownみたいに「コード部分を折りたたんでおいて，クリックしたら開くようにしたい。」という場合には工夫が必要（マニュアルには載っていない）。</p>
+<p><code>dyndoc</code>コマンドを使うときにstataのコード囲む以下の書式</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-html" data-lang="html">~~~~
+<span style="color:#960050;background-color:#1e0010">&lt;</span>&lt;<span style="color:#f92672">dd_do</span>&gt;&gt;
+ /*ここにstataコードを書く*/
+<span style="color:#960050;background-color:#1e0010">&lt;</span>&lt;/<span style="color:#f92672">dd_do</span>&gt;&gt;
+~~~~
+</code></pre></div><p>の前後に <code>&lt;details&gt;</code>をつければいい。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-html" data-lang="html">&lt;<span style="color:#f92672">details</span>&gt;
+&lt;<span style="color:#f92672">summary</span>&gt; &lt;<span style="color:#f92672">b</span>&gt;Code&lt;/<span style="color:#f92672">b</span>&gt; &lt;/<span style="color:#f92672">summary</span>&gt;
+
+~~~~
+<span style="color:#960050;background-color:#1e0010">&lt;</span>&lt;<span style="color:#f92672">dd_do</span>&gt;&gt;
+ /*ここにstataコードを書く*/
+<span style="color:#960050;background-color:#1e0010">&lt;</span>&lt;/<span style="color:#f92672">dd_do</span>&gt;&gt;
+~~~~
+
+&lt;/<span style="color:#f92672">detail</span>&gt;
+</code></pre></div><p><!-- raw HTML omitted --><!-- raw HTML omitted --></p>
+<h3 id="33-目次をつける">3.3 目次をつける</h3>
+<p>レポートが長くなったら目次をつけたい。そんな場合はmarkdownの目次が使える。本文の見出しがこんな感じだとすると</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-markdown" data-lang="markdown"> ## 1項のタイトル
+</code></pre></div><p>目次は</p>
+<pre><code>1. [1項のタイトル](#1項のタイトル)  
+2. [2項のタイトル](#2項のタイトル)
+</code></pre><p>という箇条書きを作り，本文のタイトルと同じもの（前に#をつける)を括弧で囲んでつける。()の中について，スペースは「-」でつなぐとか「.」は無視するとか例外もある。</p>
+<p><!-- raw HTML omitted --><!-- raw HTML omitted --></p>
+<h3 id="34トップに戻るボタンをつける">3.4「トップに戻る」ボタンをつける</h3>
+<p>レポートが長くなったら目次に戻るボタンをつけたい。</p>
+<p><code>&lt;head&gt;</code>の<code>&lt;style&gt;</code>内に以下のように入れておく</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-html" data-lang="html">&lt;<span style="color:#f92672">head</span>&gt;
+  &lt;<span style="color:#f92672">style</span>&gt;
+    .<span style="color:#a6e22e">sticky</span> {
+      <span style="color:#66d9ef">position</span>: <span style="color:#66d9ef">-webkit-</span><span style="color:#66d9ef">sticky</span>;
+      <span style="color:#66d9ef">position</span>: <span style="color:#66d9ef">sticky</span>;
+      <span style="color:#66d9ef">bottom</span>: <span style="color:#ae81ff">15</span><span style="color:#66d9ef">px</span>;
+      <span style="color:#66d9ef">float</span>: <span style="color:#66d9ef">right</span>;
+    }
+ &lt;/<span style="color:#f92672">style</span>&gt;
+&lt;/<span style="color:#f92672">head</span>&gt;
+</code></pre></div><p>その上で，出力したいファイルの最初(タイトルの下とか)に</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-html" data-lang="html">&lt;<span style="color:#f92672">a</span> <span style="color:#a6e22e">id</span><span style="color:#f92672">=</span><span style="color:#e6db74">”top”</span>&gt;&lt;/<span style="color:#f92672">a</span>&gt;
+</code></pre></div><p>ファイルの最後の行に</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-html" data-lang="html">&lt;<span style="color:#f92672">div</span> <span style="color:#a6e22e">class</span><span style="color:#f92672">=</span><span style="color:#e6db74">”sticky”</span>&gt;
+
+[↑Top](#top)
+
+&lt;/<span style="color:#f92672">div</span>&gt;
+</code></pre></div><p>を入れる。画面の右下にトップに戻るボタンが表示されるようになる。</p>
+<p><!-- raw HTML omitted --><!-- raw HTML omitted --></p>
+<h3 id="35-コマンドのハイライト">3.5 コマンドのハイライト</h3>
+<p>Stataのsyntax highlightingをやってくれるStataxというのがある。 <code>&lt;head&gt;</code>内に以下のものを入れておくと使える。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-html" data-lang="html">&lt;<span style="color:#f92672">head</span>&gt;
+  &lt;<span style="color:#f92672">script</span> <span style="color:#a6e22e">type</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;text/javascript&#34;</span> <span style="color:#a6e22e">src</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#39;http://haghish.com/statax/Statax.js&#39;</span>&gt;&lt;/<span style="color:#f92672">script</span>&gt;
+&lt;/<span style="color:#f92672">head</span>&gt;
+</code></pre></div><p>各コマンドの入力部の前後に <code>&lt;pre class =”sh_stata”&gt;</code>と <code>&lt;/pre&gt;</code>ををつける。コマンドの折り畳みも含めると，こんな感じ。入力辞書にでもショートカットとして入れておくといいかも（僕はsssって打つとこれが出るようにしてます）。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-html" data-lang="html">&lt;<span style="color:#f92672">details</span>&gt;
+&lt;<span style="color:#f92672">summary</span>&gt; &lt;<span style="color:#f92672">b</span>&gt;Code&lt;/<span style="color:#f92672">b</span>&gt; &lt;/<span style="color:#f92672">summary</span>&gt;
+&lt;<span style="color:#f92672">pre</span> <span style="color:#a6e22e">class</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;sh_stata&#34;</span>&gt;
+
+~~~~
+<span style="color:#960050;background-color:#1e0010">&lt;</span>&lt;<span style="color:#f92672">dd_do:</span> <span style="color:#a6e22e">noresults</span>&gt;&gt;
+/*ここstataコード*/
+<span style="color:#960050;background-color:#1e0010">&lt;</span>&lt;/<span style="color:#f92672">dd_do</span>&gt;&gt;
+~~~~
+
+&lt;/<span style="color:#f92672">pre</span>&gt;&lt;/<span style="color:#f92672">details</span>&gt;
+</code></pre></div><p><!-- raw HTML omitted --><!-- raw HTML omitted --></p>
+<h3 id="36-デザインを抜本的に変える">3.6 デザインを抜本的に変える</h3>
+<p>フォントとか表示される横幅とかいろいろ変えたいって思ったら，cssファイルを作成しておき，doファイルの最初にcssを読み込むコマンドをつけておけば良い。(cssの内容をdoファイルにベタ打ちしても同じことはできるけど，ファイル長くなりすぎて肝心の分析の内容とかを確認しづらくなる。)</p>
+<p>例えばhead.cssというファイルを作っておいて，doファイルの冒頭に</p>
+<p><code>&lt;&lt;dd_include: /Users/(ファイルの場所)/head.css&gt;&gt;</code></p>
+<p>をつけとくと，cssの内容を反映してくれる。</p>
+<hr>
+<p><!-- raw HTML omitted --><!-- raw HTML omitted --></p>
+<h2 id="4-色々組み込んだcssを作った">4. 色々組み込んだcssを作った</h2>
+<p>上に書いた日本語文字化け防止とか，トップに戻るボタンとか，数式の出力，コードのハイライトにとかができるようにしたcssをgithubに載せておきました。それを呼び出すのがこの記事の冒頭に書いたこれです。</p>
+<p><code>&lt;&lt;dd_include: https://tomo-sakuma.github.io/stata_dyndoc_customize/stata_header.css&gt;&gt;</code></p>
+<p>これをファイルの最初に書いておいて，上であげたdoファイル内の変更（コードの折りたたみなど）を加えると，こんな感じになります。さっきと同じように，sample2.doというdoファイルに以下の内容が書かれているとして，<code>dyndoc sample.do,replace embedimage</code> を実行します。</p>
+<pre><code>&lt;&lt;dd_include: https://tomo-sakuma.github.io/stata_dyndoc_customize/stata_header.css &gt;&gt;
+
+&lt;&lt;dd_version: 2&gt;&gt;
+
+# Title
+&lt;&lt;dd_display: &quot;$S_DATE $S_TIME&quot;&gt;&gt;
+
+This is an example
+
+日本語は文字化けする
+
+$$y=ax+b$$
+
+&lt;details&gt;
+&lt;summary&gt; &lt;b&gt;Code&lt;/b&gt; &lt;/summary&gt;
+&lt;pre class=&quot;sh_stata&quot;&gt;
+
+~~~~
+&lt;&lt;dd_do:&gt;&gt;
+clear all
+
+sysuse auto.dta
+
+sum
+
+eststo result1: ///　回帰分析
+ reg price mpg
+
+esttab result1 ///　結果の表示
+ using test1.html ///
+ ,replace ///
+ star(* 0.1 ** 0.05 *** 0.01) ///
+ b(3) se(3) brackets r2(3) ar2(3) aic(3) ///
+ label varwidth(25)
+&lt;&lt;/dd_do&gt;&gt;
+~~~~
+
+&lt;/pre&gt;&lt;/details&gt;
+
+&lt;&lt;dd_include: test1.html&gt;&gt;
+
+&lt;div class=&quot;sticky&quot;&gt;
+
+[↑Top](#top)
+
+&lt;/div&gt;
+</code></pre><p><img src="https://cdn-images-1.medium.com/max/2400/1*iREK0VVfx6vE53RbSqUNpA.png" alt=""></p>
+<p>Codeボタンを押したらこんな感じ。</p>
+<p><img src="https://cdn-images-1.medium.com/max/2400/1*w4g8PwbFZgxVRrDC3P6Bzg.png" alt=""></p>
+
+      </div>
+    </article>
+
+    <hr />
+
+    <div class="post-info">
+        <p>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-tag meta-icon">
+            <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
+            <line x1="7" y1="7" x2="7" y2="7"></line>
+          </svg><span class="tag"><a href="https://tomo-sakuma.github.io/tags/stata/">stata</a></span>
+        </p>
+
+      <p>
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file-text">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+          <line x1="16" y1="13" x2="8" y2="13"></line>
+          <line x1="16" y1="17" x2="8" y2="17"></line>
+          <polyline points="10 9 9 9 8 9"></polyline>
+        </svg>
+        315 Words
+      </p>
+
+      <p>
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-calendar">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+          <line x1="16" y1="2" x2="16" y2="6"></line>
+          <line x1="8" y1="2" x2="8" y2="6"></line>
+          <line x1="3" y1="10" x2="21" y2="10"></line>
+        </svg>
+        2020-07-08 20:00 -0400
+      </p>
+    </div>
+      <hr />
+      <div class="sharing-buttons">
+        
+<a class="resp-sharing-button__link" href="https://facebook.com/sharer/sharer.php?u=https%3a%2f%2ftomo-sakuma.github.io%2fposts%2f2020-07-09_stata%2f" target="_blank" rel="noopener" aria-label="" title="Share on facebook">
+  <div class="resp-sharing-button resp-sharing-button--facebook resp-sharing-button--small"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>
+    </div>
+  </div>
+</a>
+
+
+<a class="resp-sharing-button__link" href="https://twitter.com/intent/tweet/?url=https%3a%2f%2ftomo-sakuma.github.io%2fposts%2f2020-07-09_stata%2f" target="_blank" rel="noopener" aria-label="" title="Share on twitter">
+  <div class="resp-sharing-button resp-sharing-button--twitter resp-sharing-button--small">
+      <div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path></svg>
+    </div>
+  </div>
+</a>
+
+
+<a class="resp-sharing-button__link" href="https://www.tumblr.com/widgets/share/tool?posttype=link&amp;title=%5bStata%5ddyndoc%e3%82%b3%e3%83%9e%e3%83%b3%e3%83%89%e3%82%92%e4%bd%bf%e3%81%a3%e3%81%9f%e5%87%ba%e5%8a%9b%e3%82%92%e3%82%ab%e3%82%b9%e3%82%bf%e3%83%9e%e3%82%a4%e3%82%ba%e3%81%99%e3%82%8b&amp;caption=%5bStata%5ddyndoc%e3%82%b3%e3%83%9e%e3%83%b3%e3%83%89%e3%82%92%e4%bd%bf%e3%81%a3%e3%81%9f%e5%87%ba%e5%8a%9b%e3%82%92%e3%82%ab%e3%82%b9%e3%82%bf%e3%83%9e%e3%82%a4%e3%82%ba%e3%81%99%e3%82%8b&amp;canonicalUrl=https%3a%2f%2ftomo-sakuma.github.io%2fposts%2f2020-07-09_stata%2f" target="_blank" rel="noopener" aria-label="" title="Share on tumblr">
+  <div class="resp-sharing-button resp-sharing-button--tumblr resp-sharing-button--small">
+    <div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.563 24c-5.093 0-7.031-3.756-7.031-6.411V9.747H5.116V6.648c3.63-1.313 4.512-4.596 4.71-6.469C9.84.051 9.941 0 9.999 0h3.517v6.114h4.801v3.633h-4.82v7.47c.016 1.001.375 2.371 2.207 2.371h.09c.631-.02 1.486-.205 1.936-.419l1.156 3.425c-.436.636-2.4 1.374-4.156 1.404h-.178l.011.002z"/></svg>
+    </div>
+  </div>
+</a>
+
+
+<a class="resp-sharing-button__link" href="mailto:?subject=%5bStata%5ddyndoc%e3%82%b3%e3%83%9e%e3%83%b3%e3%83%89%e3%82%92%e4%bd%bf%e3%81%a3%e3%81%9f%e5%87%ba%e5%8a%9b%e3%82%92%e3%82%ab%e3%82%b9%e3%82%bf%e3%83%9e%e3%82%a4%e3%82%ba%e3%81%99%e3%82%8b&amp;body=https%3a%2f%2ftomo-sakuma.github.io%2fposts%2f2020-07-09_stata%2f" target="_self" rel="noopener" aria-label="" title="Share via email">
+  <div class="resp-sharing-button resp-sharing-button--email resp-sharing-button--small"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+    </div>
+  </div>
+</a>
+
+
+<a class="resp-sharing-button__link" href="https://pinterest.com/pin/create/button/?url=https%3a%2f%2ftomo-sakuma.github.io%2fposts%2f2020-07-09_stata%2f&amp;media=https%3a%2f%2ftomo-sakuma.github.io%2fposts%2f2020-07-09_stata%2f;description=%5bStata%5ddyndoc%e3%82%b3%e3%83%9e%e3%83%b3%e3%83%89%e3%82%92%e4%bd%bf%e3%81%a3%e3%81%9f%e5%87%ba%e5%8a%9b%e3%82%92%e3%82%ab%e3%82%b9%e3%82%bf%e3%83%9e%e3%82%a4%e3%82%ba%e3%81%99%e3%82%8b" target="_blank" rel="noopener" aria-label="" title="Share on pinterest">
+  <div class="resp-sharing-button resp-sharing-button--pinterest resp-sharing-button--small"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12.017 0C5.396 0 .029 5.367.029 11.987c0 5.079 3.158 9.417 7.618 11.162-.105-.949-.199-2.403.041-3.439.219-.937 1.406-5.957 1.406-5.957s-.359-.72-.359-1.781c0-1.663.967-2.911 2.168-2.911 1.024 0 1.518.769 1.518 1.688 0 1.029-.653 2.567-.992 3.992-.285 1.193.6 2.165 1.775 2.165 2.128 0 3.768-2.245 3.768-5.487 0-2.861-2.063-4.869-5.008-4.869-3.41 0-5.409 2.562-5.409 5.199 0 1.033.394 2.143.889 2.741.099.12.112.225.085.345-.09.375-.293 1.199-.334 1.363-.053.225-.172.271-.401.165-1.495-.69-2.433-2.878-2.433-4.646 0-3.776 2.748-7.252 7.92-7.252 4.158 0 7.392 2.967 7.392 6.923 0 4.135-2.607 7.462-6.233 7.462-1.214 0-2.354-.629-2.758-1.379l-.749 2.848c-.269 1.045-1.004 2.352-1.498 3.146 1.123.345 2.306.535 3.55.535 6.607 0 11.985-5.365 11.985-11.987C23.97 5.39 18.592.026 11.985.026L12.017 0z"/></svg>
+    </div>
+  </div>
+</a>
+
+
+<a class="resp-sharing-button__link" href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https%3a%2f%2ftomo-sakuma.github.io%2fposts%2f2020-07-09_stata%2f&amp;title=%5bStata%5ddyndoc%e3%82%b3%e3%83%9e%e3%83%b3%e3%83%89%e3%82%92%e4%bd%bf%e3%81%a3%e3%81%9f%e5%87%ba%e5%8a%9b%e3%82%92%e3%82%ab%e3%82%b9%e3%82%bf%e3%83%9e%e3%82%a4%e3%82%ba%e3%81%99%e3%82%8b&amp;summary=%5bStata%5ddyndoc%e3%82%b3%e3%83%9e%e3%83%b3%e3%83%89%e3%82%92%e4%bd%bf%e3%81%a3%e3%81%9f%e5%87%ba%e5%8a%9b%e3%82%92%e3%82%ab%e3%82%b9%e3%82%bf%e3%83%9e%e3%82%a4%e3%82%ba%e3%81%99%e3%82%8b&amp;source=https%3a%2f%2ftomo-sakuma.github.io%2fposts%2f2020-07-09_stata%2f" target="_blank" rel="noopener" aria-label="" title="Share on linkedin">
+  <div class="resp-sharing-button resp-sharing-button--linkedin resp-sharing-button--small"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>
+    </div>
+  </div>
+</a>
+
+
+<a class="resp-sharing-button__link" href="https://reddit.com/submit/?url=https%3a%2f%2ftomo-sakuma.github.io%2fposts%2f2020-07-09_stata%2f&amp;resubmit=true&amp;title=%5bStata%5ddyndoc%e3%82%b3%e3%83%9e%e3%83%b3%e3%83%89%e3%82%92%e4%bd%bf%e3%81%a3%e3%81%9f%e5%87%ba%e5%8a%9b%e3%82%92%e3%82%ab%e3%82%b9%e3%82%bf%e3%83%9e%e3%82%a4%e3%82%ba%e3%81%99%e3%82%8b" target="_blank" rel="noopener" aria-label="" title="Share on reddit">
+  <div class="resp-sharing-button resp-sharing-button--reddit resp-sharing-button--small"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .898.196 1.207.49 1.207-.883 2.878-1.43 4.744-1.487l.885-4.182a.342.342 0 0 1 .14-.197.35.35 0 0 1 .238-.042l2.906.617a1.214 1.214 0 0 1 1.108-.701zM9.25 12C8.561 12 8 12.562 8 13.25c0 .687.561 1.248 1.25 1.248.687 0 1.248-.561 1.248-1.249 0-.688-.561-1.249-1.249-1.249zm5.5 0c-.687 0-1.248.561-1.248 1.25 0 .687.561 1.248 1.249 1.248.688 0 1.249-.561 1.249-1.249 0-.687-.562-1.249-1.25-1.249zm-5.466 3.99a.327.327 0 0 0-.231.094.33.33 0 0 0 0 .463c.842.842 2.484.913 2.961.913.477 0 2.105-.056 2.961-.913a.361.361 0 0 0 .029-.463.33.33 0 0 0-.464 0c-.547.533-1.684.73-2.512.73-.828 0-1.979-.196-2.512-.73a.326.326 0 0 0-.232-.095z"/></svg>
+    </div>
+  </div>
+</a>
+
+
+<a class="resp-sharing-button__link" href="https://www.xing.com/app/user?op=share;url=https%3a%2f%2ftomo-sakuma.github.io%2fposts%2f2020-07-09_stata%2f;title=%5bStata%5ddyndoc%e3%82%b3%e3%83%9e%e3%83%b3%e3%83%89%e3%82%92%e4%bd%bf%e3%81%a3%e3%81%9f%e5%87%ba%e5%8a%9b%e3%82%92%e3%82%ab%e3%82%b9%e3%82%bf%e3%83%9e%e3%82%a4%e3%82%ba%e3%81%99%e3%82%8b" target="_blank" rel="noopener" aria-label="" title="Share on xing">
+  <div class="resp-sharing-button resp-sharing-button--xing resp-sharing-button--small"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M18.188 0c-.517 0-.741.325-.927.66 0 0-7.455 13.224-7.702 13.657.015.024 4.919 9.023 4.919 9.023.17.308.436.66.967.66h3.454c.211 0 .375-.078.463-.22.089-.151.089-.346-.009-.536l-4.879-8.916c-.004-.006-.004-.016 0-.022L22.139.756c.095-.191.097-.387.006-.535C22.056.078 21.894 0 21.686 0h-3.498zM3.648 4.74c-.211 0-.385.074-.473.216-.09.149-.078.339.02.531l2.34 4.05c.004.01.004.016 0 .021L1.86 16.051c-.099.188-.093.381 0 .529.085.142.239.234.45.234h3.461c.518 0 .766-.348.945-.667l3.734-6.609-2.378-4.155c-.172-.315-.434-.659-.962-.659H3.648v.016z"/></svg>
+    </div>
+  </div>
+</a>
+
+
+<a class="resp-sharing-button__link" href="whatsapp://send?text=%5bStata%5ddyndoc%e3%82%b3%e3%83%9e%e3%83%b3%e3%83%89%e3%82%92%e4%bd%bf%e3%81%a3%e3%81%9f%e5%87%ba%e5%8a%9b%e3%82%92%e3%82%ab%e3%82%b9%e3%82%bf%e3%83%9e%e3%82%a4%e3%82%ba%e3%81%99%e3%82%8b%20https%3a%2f%2ftomo-sakuma.github.io%2fposts%2f2020-07-09_stata%2f" target="_blank" rel="noopener" aria-label="" title="Share on whatsapp">
+  <div class="resp-sharing-button resp-sharing-button--whatsapp resp-sharing-button--small"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="none" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+    </div>
+  </div>
+</a>
+
+
+<a class="resp-sharing-button__link" href="https://news.ycombinator.com/submitlink?u=https%3a%2f%2ftomo-sakuma.github.io%2fposts%2f2020-07-09_stata%2f&amp;t=%5bStata%5ddyndoc%e3%82%b3%e3%83%9e%e3%83%b3%e3%83%89%e3%82%92%e4%bd%bf%e3%81%a3%e3%81%9f%e5%87%ba%e5%8a%9b%e3%82%92%e3%82%ab%e3%82%b9%e3%82%bf%e3%83%9e%e3%82%a4%e3%82%ba%e3%81%99%e3%82%8b" target="_blank" rel="noopener" aria-label="" title="Share on hacker news">
+  <div class="resp-sharing-button resp-sharing-button--hackernews resp-sharing-button--small"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+			<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M0 24V0h24v24H0zM6.951 5.896l4.112 7.708v5.064h1.583v-4.972l4.148-7.799h-1.749l-2.457 4.875c-.372.745-.688 1.434-.688 1.434s-.297-.708-.651-1.434L8.831 5.896h-1.88z"/></svg>
+    </div>
+  </div>
+</a>
+
+
+<a class="resp-sharing-button__link" href="https://telegram.me/share/url?text=%5bStata%5ddyndoc%e3%82%b3%e3%83%9e%e3%83%b3%e3%83%89%e3%82%92%e4%bd%bf%e3%81%a3%e3%81%9f%e5%87%ba%e5%8a%9b%e3%82%92%e3%82%ab%e3%82%b9%e3%82%bf%e3%83%9e%e3%82%a4%e3%82%ba%e3%81%99%e3%82%8b&amp;url=https%3a%2f%2ftomo-sakuma.github.io%2fposts%2f2020-07-09_stata%2f" target="_blank" rel="noopener" aria-label="" title="Share on telegram">
+  <div class="resp-sharing-button resp-sharing-button--telegram resp-sharing-button--small"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+    </div>
+  </div>
+</a>
+
+      </div>
+
+    
+      <div class="pagination">
+        <div class="pagination__title">
+          <span class="pagination__title-h"></span>
+          <hr />
+        </div>
+
+        <div class="pagination__buttons">
+          
+
+          
+            <span class="button next">
+              <a href="https://tomo-sakuma.github.io/posts/2020-07-04%E8%A1%8C%E3%81%8D%E5%85%88/">
+                <span class="button__text">[サバティカル]行き先探し</span>
+                <span class="button__icon">→</span>
+              </a>
+            </span>
+          
+        </div>
+      </div>
+    
+
+
+    
+
+  </main>
+
+            </div>
+
+            
+                <footer class="footer">
+    <div class="footer__inner">
+        <div class="footer__content">
+            <span>&copy; 2020</span>
+            
+                <span><a href="https://tomo-sakuma.github.io/">Tomohiro Sakuma</a></span>
+            
+            
+            <span> <a href="https://tomo-sakuma.github.io/posts/index.xml" target="_blank" title="rss"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-rss"><path d="M4 11a9 9 0 0 1 9 9"></path><path d="M4 4a16 16 0 0 1 16 16"></path><circle cx="5" cy="19" r="1"></circle></svg></a></span>
+        </div>
+    </div>
+    <div class="footer__inner">
+        <div class="footer__content">
+            <span>Powered by <a href="http://gohugo.io">Hugo</a></span>
+            <span>Made with &#10084; by <a href="https://github.com/rhazdon">Djordje Atlialp</a></span>
+        </div>
+    </div>
+</footer>
+
+            
+        </div>
+
+        
+
+
+
+
+<script type="text/javascript" src="/bundle.min.dc716e9092c9820b77f96da294d0120aeeb189b5bcea9752309ebea27fd53bbe6b13cffb2aca8ecf32525647ceb7001f76091de4199ac5a3caa432c070247f5b.js" integrity="sha512-3HFukJLJggt3&#43;W2ilNASCu6xibW86pdSMJ6&#43;on/VO75rE8/7KsqOzzJSVkfOtwAfdgkd5BmaxaPKpDLAcCR/Ww=="></script>
+
+
+
+    </body>
+</html>
