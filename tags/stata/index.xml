@@ -23,10 +23,10 @@
 RでいうRmarkdownと似たような感じです。ただし，いろいろ超便利なRmarkdownと違って操作性が良くない。何もせずに使うと日本語は文字化けするし，数式も使えない。stataのサイトで配布されているheaderとcss使っても日本語文字化け問題は解決しないし，出力される表のデザインが気に入らない。いろいろな問題を解決するための方法をここにメモしておきます。
  dyndocコマンドのマニュアルを一通り読んだ前提で書いています。
 markdown，html，cssを使っていますが，この辺り全く知らなくてもとりあえずここに書いたことはできます（僕は dyndocの出力方法をいじる過程で初めてhtmlとcssを触った初心者ですので，よくわかってない部分があります）。
-   気に入らない点 問題の解決  日本語の文字化けを防ぐ 数式を入れる   さらに使い勝手を良くするために  ファイル形式は.doでもいい コード部分を折り畳む 目次をつける 「トップに戻る」ボタンをつける コマンドのハイライト デザインを抜本的に変える   色々組み込んだcssを作った   以下色々書きますが，結局のところこのコマンドをstataに読ませたいファイルの一番上に貼っておけば全部できるようになります。
-&amp;lt;&amp;lt;dd_include: https://tomo-sakuma.github.io/stata_dyndoc_customize/stata_header.css&amp;gt;&amp;gt;
- 1. 気に入らない点 何も特別なことをしない状態のものを実行すると，日本語が文字化けします。数式は表示されないです(コードは載せないか載せるかの二択)。さらに，ブラウザの幅の広さに合わせて横幅いっぱいに文字が表示されます。
-試しにsample.doというdoファイルに以下の内容が書かれているとして，dyndoc sample.do,replace embedimage を実行します
+   気に入らない点 問題の解決  日本語の文字化けを防ぐ 数式を入れる   さらに使い勝手を良くするために  ファイル形式は.doでもいい コード部分を折り畳む 目次をつける トップに戻るボタンをつける コマンドのハイライト デザインを抜本的に変える   色々組み込んだcssを作った   以下色々書きますが，結局のところこのコマンドをstataに読ませたいファイルの一番上に貼っておけば全部できるようになります。
+&amp;lt;&amp;lt;dd_include: https://tomo-sakuma.github.io/stata_dyndoc_customize/stata_header.css&amp;gt;&amp;gt;  1. 気に入らない点 何も特別なことをしない状態のものを実行すると，日本語が文字化けします。数式は表示されないです(コードは載せないか載せるかの二択)。さらに，ブラウザの幅の広さに合わせて横幅いっぱいに文字が表示されます。
+試しにsample.doというdoファイルに以下の内容が書かれているとして，
+dyndoc sample.do,replace embedimage を実行します
 &amp;lt;&amp;lt;dd_version: 2&amp;gt;&amp;gt; # Title &amp;lt;&amp;lt;dd_display: &amp;quot;$S_DATE $S_TIME&amp;quot;&amp;gt;&amp;gt; This is an example 日本語は文字化けする $$y=ax+b$$ ~~~~ &amp;lt;&amp;lt;dd_do:&amp;gt;&amp;gt; clear all sysuse auto.dta sum eststo result1: ///　回帰分析 reg price mpg esttab result1 ///　結果の表示 using test1.</description>
     </item>
     

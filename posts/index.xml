@@ -108,10 +108,10 @@
 RでいうRmarkdownと似たような感じです。ただし，いろいろ超便利なRmarkdownと違って操作性が良くない。何もせずに使うと日本語は文字化けするし，数式も使えない。stataのサイトで配布されているheaderとcss使っても日本語文字化け問題は解決しないし，出力される表のデザインが気に入らない。いろいろな問題を解決するための方法をここにメモしておきます。
  dyndocコマンドのマニュアルを一通り読んだ前提で書いています。
 markdown，html，cssを使っていますが，この辺り全く知らなくてもとりあえずここに書いたことはできます（僕は dyndocの出力方法をいじる過程で初めてhtmlとcssを触った初心者ですので，よくわかってない部分があります）。
-   気に入らない点 問題の解決  日本語の文字化けを防ぐ 数式を入れる   さらに使い勝手を良くするために  ファイル形式は.doでもいい コード部分を折り畳む 目次をつける 「トップに戻る」ボタンをつける コマンドのハイライト デザインを抜本的に変える   色々組み込んだcssを作った   以下色々書きますが，結局のところこのコマンドをstataに読ませたいファイルの一番上に貼っておけば全部できるようになります。
-&amp;lt;&amp;lt;dd_include: https://tomo-sakuma.github.io/stata_dyndoc_customize/stata_header.css&amp;gt;&amp;gt;
- 1. 気に入らない点 何も特別なことをしない状態のものを実行すると，日本語が文字化けします。数式は表示されないです(コードは載せないか載せるかの二択)。さらに，ブラウザの幅の広さに合わせて横幅いっぱいに文字が表示されます。
-試しにsample.doというdoファイルに以下の内容が書かれているとして，dyndoc sample.do,replace embedimage を実行します
+   気に入らない点 問題の解決  日本語の文字化けを防ぐ 数式を入れる   さらに使い勝手を良くするために  ファイル形式は.doでもいい コード部分を折り畳む 目次をつける トップに戻るボタンをつける コマンドのハイライト デザインを抜本的に変える   色々組み込んだcssを作った   以下色々書きますが，結局のところこのコマンドをstataに読ませたいファイルの一番上に貼っておけば全部できるようになります。
+&amp;lt;&amp;lt;dd_include: https://tomo-sakuma.github.io/stata_dyndoc_customize/stata_header.css&amp;gt;&amp;gt;  1. 気に入らない点 何も特別なことをしない状態のものを実行すると，日本語が文字化けします。数式は表示されないです(コードは載せないか載せるかの二択)。さらに，ブラウザの幅の広さに合わせて横幅いっぱいに文字が表示されます。
+試しにsample.doというdoファイルに以下の内容が書かれているとして，
+dyndoc sample.do,replace embedimage を実行します
 &amp;lt;&amp;lt;dd_version: 2&amp;gt;&amp;gt; # Title &amp;lt;&amp;lt;dd_display: &amp;quot;$S_DATE $S_TIME&amp;quot;&amp;gt;&amp;gt; This is an example 日本語は文字化けする $$y=ax+b$$ ~~~~ &amp;lt;&amp;lt;dd_do:&amp;gt;&amp;gt; clear all sysuse auto.dta sum eststo result1: ///　回帰分析 reg price mpg esttab result1 ///　結果の表示 using test1.</description>
             <content type="html"><![CDATA[<p><code>dyndoc</code> コマンドは，Stata 15 から実装されたコマンド。stataのコマンドと結果はもちろん，markdown形式で文章を書いた結果レポートみたいなものをhtmlファイルやdocxファイルに出力できます。</p>
 <p>分析を変えてもその都度出力できるので，進捗報告のたびに結果の表をいちいちまとめたりしなくて良くなります。便利。</p>
@@ -135,8 +135,8 @@ markdown，html，cssを使っていますが，この辺り全く知らなく�
 <li><a href="#31-%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB%E5%BD%A2%E5%BC%8F%E3%81%AF.do%E3%81%A7%E3%82%82%E3%81%84%E3%81%84">ファイル形式は.doでもいい</a></li>
 <li><a href="#32-%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB%E5%BD%A2%E5%BC%8F%E3%81%AF.do%E3%81%A7%E3%82%82%E3%81%84%E3%81%84">コード部分を折り畳む</a></li>
 <li><a href="#33-%E7%9B%AE%E6%AC%A1%E3%82%92%E3%81%A4%E3%81%91%E3%82%8B">目次をつける</a></li>
-<li><a href="#34-%E3%80%8C%E3%83%88%E3%83%83%E3%83%97%E3%81%AB%E6%88%BB%E3%82%8B%E3%80%8D%E3%83%9C%E3%82%BF%E3%83%B3%E3%82%92%E3%81%A4%E3%81%91%E3%82%8B">「トップに戻る」ボタンをつける</a></li>
-<li><a href="#i35-%E3%82%B3%E3%83%9E%E3%83%B3%E3%83%89%E3%81%AE%E3%83%8F%E3%82%A4%E3%83%A9%E3%82%A4%E3%83%88">コマンドのハイライト</a></li>
+<li><a href="#34-%E3%83%88%E3%83%83%E3%83%97%E3%81%AB%E6%88%BB%E3%82%8B%E3%83%9C%E3%82%BF%E3%83%B3%E3%82%92%E3%81%A4%E3%81%91%E3%82%8B">トップに戻るボタンをつける</a></li>
+<li><a href="#35-%E3%82%B3%E3%83%9E%E3%83%B3%E3%83%89%E3%81%AE%E3%83%8F%E3%82%A4%E3%83%A9%E3%82%A4%E3%83%88">コマンドのハイライト</a></li>
 <li><a href="#36-%E3%83%87%E3%82%B6%E3%82%A4%E3%83%B3%E3%82%92%E6%8A%9C%E6%9C%AC%E7%9A%84%E3%81%AB%E5%A4%89%E3%81%88%E3%82%8B">デザインを抜本的に変える</a></li>
 </ol>
 </li>
@@ -144,13 +144,14 @@ markdown，html，cssを使っていますが，この辺り全く知らなく�
 </ol>
 <hr>
 <p>以下色々書きますが，結局のところこのコマンドをstataに読ませたいファイルの一番上に貼っておけば全部できるようになります。</p>
-<p><code>&lt;&lt;dd_include: https://tomo-sakuma.github.io/stata_dyndoc_customize/stata_header.css&gt;&gt;</code></p>
-<hr>
-<p><!-- raw HTML omitted --><!-- raw HTML omitted --></p>
+<pre><code class="language-stata" data-lang="stata">&lt;&lt;dd_include: https://tomo-sakuma.github.io/stata_dyndoc_customize/stata_header.css&gt;&gt;
+</code></pre><hr>
 <h2 id="1-気に入らない点">1. 気に入らない点</h2>
 <p>何も特別なことをしない状態のものを実行すると，日本語が文字化けします。数式は表示されないです(コードは載せないか載せるかの二択)。さらに，ブラウザの幅の広さに合わせて横幅いっぱいに文字が表示されます。</p>
-<p>試しにsample.doというdoファイルに以下の内容が書かれているとして，<code>dyndoc sample.do,replace embedimage</code> を実行します</p>
-<pre><code>&lt;&lt;dd_version: 2&gt;&gt;
+<p>試しにsample.doというdoファイルに以下の内容が書かれているとして，</p>
+<pre><code class="language-stata" data-lang="stata">dyndoc sample.do,replace embedimage
+</code></pre><p>を実行します</p>
+<pre><code class="language-stata" data-lang="stata">&lt;&lt;dd_version: 2&gt;&gt;
 # Title
 &lt;&lt;dd_display: &quot;$S_DATE $S_TIME&quot;&gt;&gt;
 
@@ -181,7 +182,6 @@ esttab result1 ///　結果の表示
 ~~~~
 </code></pre><p><img src="https://cdn-images-1.medium.com/max/1600/1*Bz9ymwNgYZUiC-K6s8PZkQ.png" alt="何も工夫せずにやるとこうなる"></p>
 <hr>
-<p><!-- raw HTML omitted --><!-- raw HTML omitted --></p>
 <h2 id="2-問題の解決">2. 問題の解決</h2>
 <p><!-- raw HTML omitted --><!-- raw HTML omitted --></p>
 <h3 id="21-日本語の文字化けを防ぐ">2.1 日本語の文字化けを防ぐ</h3>
@@ -222,8 +222,8 @@ esttab result1 ///　結果の表示
 <li><code>dyndoc</code>コマンドで.doファイルを読み込んで出力</li>
 </ol>
 <p>って感じで行ける(冒頭の例もそうやった)。なので，doファイルにコマンドも本文も書いておいて，そのファイルの冒頭にでも以下のような<code>dyndoc</code>実行のためのコマンドを(html用の)コメントとしてつけておいたらいい。出力するときはこの部分だけ実行する。</p>
-<p><code>&lt;!-- dyndoc ファイル名.do,replace embedimage --&gt;</code></p>
-<p><!-- raw HTML omitted --><!-- raw HTML omitted --></p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-html" data-lang="html"><span style="color:#75715e">&lt;!-- dyndoc ファイル名.do,replace embedimage --&gt;</span>
+</code></pre></div><p><!-- raw HTML omitted --><!-- raw HTML omitted --></p>
 <h3 id="32-コード部分を折り畳む">3.2 コード部分を折り畳む</h3>
 <p>コードを表示して出力するか非表示にするかは，マニュアル通りにやれば指定できる。でもRmarkdownみたいに「コード部分を折りたたんでおいて，クリックしたら開くようにしたい。」という場合には工夫が必要（マニュアルには載っていない）。</p>
 <p><code>dyndoc</code>コマンドを使うときにstataのコード囲む以下の書式</p>
@@ -243,6 +243,7 @@ esttab result1 ///　結果の表示
 ~~~~
 
 &lt;/<span style="color:#f92672">detail</span>&gt;
+
 </code></pre></div><p><!-- raw HTML omitted --><!-- raw HTML omitted --></p>
 <h3 id="33-目次をつける">3.3 目次をつける</h3>
 <p>レポートが長くなったら目次をつけたい。そんな場合はmarkdownの目次が使える。本文の見出しがこんな感じだとすると</p>
@@ -251,8 +252,7 @@ esttab result1 ///　結果の表示
 <pre><code>1. [1項のタイトル](#1項のタイトル)  
 2. [2項のタイトル](#2項のタイトル)
 </code></pre><p>という箇条書きを作り，本文のタイトルと同じもの（前に#をつける)を括弧で囲んでつける。()の中について，スペースは「-」でつなぐとか「.」は無視するとか例外もある。</p>
-<p><!-- raw HTML omitted --><!-- raw HTML omitted --></p>
-<h3 id="34トップに戻るボタンをつける">3.4「トップに戻る」ボタンをつける</h3>
+<h3 id="34-トップに戻るボタンをつける">3.4 トップに戻るボタンをつける</h3>
 <p>レポートが長くなったら目次に戻るボタンをつけたい。</p>
 <p><code>&lt;head&gt;</code>の<code>&lt;style&gt;</code>内に以下のように入れておく</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-html" data-lang="html">&lt;<span style="color:#f92672">head</span>&gt;
@@ -273,8 +273,8 @@ esttab result1 ///　結果の表示
 [↑Top](#top)
 
 &lt;/<span style="color:#f92672">div</span>&gt;
+
 </code></pre></div><p>を入れる。画面の右下にトップに戻るボタンが表示されるようになる。</p>
-<p><!-- raw HTML omitted --><!-- raw HTML omitted --></p>
 <h3 id="35-コマンドのハイライト">3.5 コマンドのハイライト</h3>
 <p>Stataのsyntax highlightingをやってくれるStataxというのがある。 <code>&lt;head&gt;</code>内に以下のものを入れておくと使える。</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-html" data-lang="html">&lt;<span style="color:#f92672">head</span>&gt;
@@ -292,19 +292,21 @@ esttab result1 ///　結果の表示
 ~~~~
 
 &lt;/<span style="color:#f92672">pre</span>&gt;&lt;/<span style="color:#f92672">details</span>&gt;
-</code></pre></div><p><!-- raw HTML omitted --><!-- raw HTML omitted --></p>
-<h3 id="36-デザインを抜本的に変える">3.6 デザインを抜本的に変える</h3>
+
+</code></pre></div><h3 id="36-デザインを抜本的に変える">3.6 デザインを抜本的に変える</h3>
 <p>フォントとか表示される横幅とかいろいろ変えたいって思ったら，cssファイルを作成しておき，doファイルの最初にcssを読み込むコマンドをつけておけば良い。(cssの内容をdoファイルにベタ打ちしても同じことはできるけど，ファイル長くなりすぎて肝心の分析の内容とかを確認しづらくなる。)</p>
 <p>例えばhead.cssというファイルを作っておいて，doファイルの冒頭に</p>
-<p><code>&lt;&lt;dd_include: /Users/(ファイルの場所)/head.css&gt;&gt;</code></p>
-<p>をつけとくと，cssの内容を反映してくれる。</p>
+<pre><code class="language-stata" data-lang="stata">&lt;&lt;dd_include: /Users/(ファイルの場所)/head.css&gt;&gt;
+</code></pre><p>をつけとくと，cssの内容を反映してくれる。</p>
 <hr>
 <p><!-- raw HTML omitted --><!-- raw HTML omitted --></p>
 <h2 id="4-色々組み込んだcssを作った">4. 色々組み込んだcssを作った</h2>
 <p>上に書いた日本語文字化け防止とか，トップに戻るボタンとか，数式の出力，コードのハイライトにとかができるようにしたcssをgithubに載せておきました。それを呼び出すのがこの記事の冒頭に書いたこれです。</p>
-<p><code>&lt;&lt;dd_include: https://tomo-sakuma.github.io/stata_dyndoc_customize/stata_header.css&gt;&gt;</code></p>
-<p>これをファイルの最初に書いておいて，上であげたdoファイル内の変更（コードの折りたたみなど）を加えると，こんな感じになります。さっきと同じように，sample2.doというdoファイルに以下の内容が書かれているとして，<code>dyndoc sample.do,replace embedimage</code> を実行します。</p>
-<pre><code>&lt;&lt;dd_include: https://tomo-sakuma.github.io/stata_dyndoc_customize/stata_header.css &gt;&gt;
+<pre><code class="language-stata" data-lang="stata">&lt;&lt;dd_include: https://tomo-sakuma.github.io/stata_dyndoc_customize/stata_header.css&gt;&gt;
+</code></pre><p>これをファイルの最初に書いておいて，上であげたdoファイル内の変更（コードの折りたたみなど）を加えると，こんな感じになります。さっきと同じように，sample2.doというdoファイルに以下の内容が書かれているとして，</p>
+<pre><code class="language-stata" data-lang="stata">dyndoc sample.do,replace embedimage
+</code></pre><p>を実行します。</p>
+<pre><code class="language-stata" data-lang="stata">&lt;&lt;dd_include: https://tomo-sakuma.github.io/stata_dyndoc_customize/stata_header.css &gt;&gt;
 
 &lt;&lt;dd_version: 2&gt;&gt;
 
