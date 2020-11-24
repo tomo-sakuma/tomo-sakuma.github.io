@@ -1,14 +1,10 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Categories on 佐久間智広</title>
+    <title>Categories on 佐久間智広&lt;br&gt;Tomohiro Sakuma</title>
     <link>https://tomo-sakuma.github.io/categories/</link>
-    <description>Recent content in Categories on 佐久間智広</description>
+    <description>Recent content in Categories on 佐久間智広&lt;br&gt;Tomohiro Sakuma</description>
     <generator>Hugo -- gohugo.io</generator>
-    <language>ja-jp</language>
-    
-	<atom:link href="https://tomo-sakuma.github.io/categories/index.xml" rel="self" type="application/rss+xml" />
-    
-    
+    <language>ja-jp</language><atom:link href="https://tomo-sakuma.github.io/categories/index.xml" rel="self" type="application/rss+xml" />
   </channel>
 </rss>
